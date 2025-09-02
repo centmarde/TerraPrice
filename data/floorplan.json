@@ -1,0 +1,44 @@
+[
+  {
+    "id": "FP-001",
+    "fileName": "office-complex-a.pdf",
+    "status": "pending",
+    "uploadedAt": "2024-01-15 10:30 AM",
+    "estimatedCost": "$2.4M"
+  },
+  {
+    "id": "FP-002",
+    "fileName": "residential-building-b.dwg",
+    "status": "approved",
+    "uploadedAt": "2024-01-15 09:15 AM",
+    "estimatedCost": "$1.8M"
+  },
+  {
+    "id": "FP-003",
+    "fileName": "warehouse-project.pdf",
+    "status": "pending",
+    "uploadedAt": "2024-01-15 08:45 AM",
+    "estimatedCost": "$3.2M"
+  },
+  {
+    "id": "FP-004",
+    "fileName": "retail-space-design.dwg",
+    "status": "rejected",
+    "uploadedAt": "2024-01-14 04:20 PM",
+    "estimatedCost": "$950K"
+  },
+  {
+    "id": "FP-005",
+    "fileName": "mixed-use-development.pdf",
+    "status": "approved",
+    "uploadedAt": "2024-01-14 02:10 PM",
+    "estimatedCost": "$5.7M"
+  },
+  {
+    "id": "FP-006",
+    "fileName": "school-building-layout.dwg",
+    "status": "pending",
+    "uploadedAt": "2024-01-14 11:30 AM",
+    "estimatedCost": "$4.1M"
+  }
+]
