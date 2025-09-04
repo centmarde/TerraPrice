@@ -1,5 +1,5 @@
 import React from 'react';
-import { DivideIcon as LucideIcon } from 'lucide-react';
+import { LucideIcon } from 'lucide-react';
 
 interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   label?: string;
@@ -8,14 +8,14 @@ interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   fullWidth?: boolean;
 }
 
-export const Input: React.FC<InputProps> = ({
+export const Input = React.forwardRef<HTMLInputElement, InputProps>(({
   label,
   icon: Icon,
   error,
   fullWidth = false,
   className = '',
   ...props
-}) => {
+}, ref) => {
   return (
     <div className={fullWidth ? 'w-full' : ''}>
       {label && (
@@ -28,6 +28,7 @@ export const Input: React.FC<InputProps> = ({
           <Icon className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
         )}
         <input
+          ref={ref}
           className={`
             w-full px-4 py-3 ${Icon ? 'pl-10' : ''} 
             border border-gray-300 rounded-lg 
@@ -45,4 +46,6 @@ export const Input: React.FC<InputProps> = ({
       )}
     </div>
   );
-};
+});
+
+Input.displayName = 'Input';
