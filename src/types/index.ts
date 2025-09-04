@@ -3,7 +3,7 @@ export interface FloorplanSubmission {
   userId: string;
   imageUrl: string;
   estimatedCost: number;
-  status: 'pending' | 'approved' | 'rejected';
+  status: 'pending' | 'approved' | 'denied';
   submittedAt: Date;
   reviewedAt?: Date;
   adminNotes?: string;
@@ -38,30 +38,35 @@ export interface AuthState {
 
 export interface MobileUpload {
   id: number;
-  user_id: string | null;
-  userDetails?: UserInfo | null;
-  created_at: string | null;
+  user_id: string;
+  userDetails?: UserInfo;
+  created_at: string;
   file_name: string;
   file_path: string;
-  file_size: number | null;
-  status: 'uploading' | 'uploaded' | 'processing' | 'completed' | 'error';
-  updated_at: string | null;
+  ai_analysis_path?: string;
+  file_size?: number;
+  comments?: string;
+  status: 'approved' | 'denied' | 'pending' | 'uploading' | 'uploaded' | 'processing' | 'completed' | 'error';
+  updated_at: string;
 }
 
 export interface MobileUploadsState {
   uploads: MobileUpload[];
-  selectedUpload: MobileUpload | null;
+  selectedUpload?: MobileUpload;
   isLoading: boolean;
+  isDialogOpen: boolean;
   fetchUploads: () => Promise<void>;
   fetchUploadsByUserId: (userId: string) => Promise<void>;
   fetchUploadsByStatus: (status: MobileUpload['status']) => Promise<void>;
   selectUpload: (id: number) => void;
-  updateUploadStatus: (id: number, status: MobileUpload['status']) => Promise<void>;
+  updateUploadStatus: (id: number, status: MobileUpload['status'], comments?: string) => Promise<void>;
+  openDialog: (upload: MobileUpload) => void;
+  closeDialog: () => void;
 }
 
 export interface FloorplanState {
   submissions: FloorplanSubmission[];
-  selectedSubmission: FloorplanSubmission | null;
+  selectedSubmission: FloorplanSubmission ;
   isLoading: boolean;
   fetchSubmissions: () => Promise<void>;
   selectSubmission: (id: string) => void;

@@ -18,7 +18,7 @@ const Dashboard: React.FC = () => {
   const stats = {
     pending: submissions.filter(s => s.status === 'pending').length,
     approved: submissions.filter(s => s.status === 'approved').length,
-    rejected: submissions.filter(s => s.status === 'rejected').length,
+    denied: submissions.filter(s => s.status === 'denied').length,
     total: submissions.length
   };
 
@@ -50,8 +50,8 @@ const Dashboard: React.FC = () => {
   };
 
   return (
-    <div className="space-y-8">
-      <div>
+    <div>
+      <div  className="space-y-8">
         <h1 className="text-3xl font-bold text-gray-900 mb-2">Dashboard</h1>
         <p className="text-gray-600">
           Overview of floorplan submissions and review status
@@ -59,7 +59,7 @@ const Dashboard: React.FC = () => {
       </div>
 
       {/* Statistics cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 py-8">
         <Card>
           <div className="flex items-center">
             <div className="flex-shrink-0">
@@ -96,8 +96,8 @@ const Dashboard: React.FC = () => {
               </div>
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Rejected</p>
-              <p className="text-2xl font-bold text-gray-900">{stats.rejected}</p>
+              <p className="text-sm font-medium text-gray-600">Denied</p>
+              <p className="text-2xl font-bold text-gray-900">{stats.denied}</p>
             </div>
           </div>
         </Card>
@@ -170,10 +170,13 @@ const Dashboard: React.FC = () => {
                 <div className="flex items-center space-x-3">
                   <span 
                     className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                      upload.status === 'approved' ? 'bg-green-100 text-green-800' :
+                      upload.status === 'denied' ? 'bg-red-100 text-red-800' :
+                      upload.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
                       upload.status === 'uploading' ? 'bg-blue-100 text-blue-800' :
-                      upload.status === 'uploaded' ? 'bg-green-100 text-green-800' :
-                      upload.status === 'processing' ? 'bg-yellow-100 text-yellow-800' :
-                      upload.status === 'completed' ? 'bg-emerald-100 text-emerald-800' :
+                      upload.status === 'uploaded' ? 'bg-emerald-100 text-emerald-800' :
+                      upload.status === 'processing' ? 'bg-purple-100 text-purple-800' :
+                      upload.status === 'completed' ? 'bg-teal-100 text-teal-800' :
                       upload.status === 'error' ? 'bg-red-100 text-red-800' :
                       'bg-gray-100 text-gray-800'
                     }`}
@@ -191,7 +194,10 @@ const Dashboard: React.FC = () => {
       </Card>
 
       {/* Mobile Uploads Table */}
-      <DashboardTable />
+      <div className="mt-8">
+        <DashboardTable />
+      </div>
+      
     </div>
   );
 };
