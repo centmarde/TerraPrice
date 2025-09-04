@@ -36,6 +36,29 @@ export interface AuthState {
   checkAuth: () => Promise<void>;
 }
 
+export interface MobileUpload {
+  id: number;
+  user_id: string | null;
+  userDetails?: UserInfo | null;
+  created_at: string | null;
+  file_name: string;
+  file_path: string;
+  file_size: number | null;
+  status: 'uploading' | 'uploaded' | 'processing' | 'completed' | 'error';
+  updated_at: string | null;
+}
+
+export interface MobileUploadsState {
+  uploads: MobileUpload[];
+  selectedUpload: MobileUpload | null;
+  isLoading: boolean;
+  fetchUploads: () => Promise<void>;
+  fetchUploadsByUserId: (userId: string) => Promise<void>;
+  fetchUploadsByStatus: (status: MobileUpload['status']) => Promise<void>;
+  selectUpload: (id: number) => void;
+  updateUploadStatus: (id: number, status: MobileUpload['status']) => Promise<void>;
+}
+
 export interface FloorplanState {
   submissions: FloorplanSubmission[];
   selectedSubmission: FloorplanSubmission | null;
