@@ -27,7 +27,7 @@ export const ApprovalControls: React.FC<ApprovalControlsProps> = ({
       setShowNotesInput(true);
       return;
     }
-    onStatusUpdate('rejected', notes);
+    onStatusUpdate('denied', notes);
   };
 
   const quickRejectReasons = [
@@ -49,11 +49,11 @@ export const ApprovalControls: React.FC<ApprovalControlsProps> = ({
           </div>
         </div>
 
-        {/* Quick reject buttons */}
+        {/* Quick deny buttons */}
         {submission.status === 'pending' && (
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Quick Rejection Reasons:
+              Quick Denial Reasons:
             </label>
             <div className="flex flex-wrap gap-2">
               {quickRejectReasons.map((reason) => (
@@ -121,7 +121,7 @@ export const ApprovalControls: React.FC<ApprovalControlsProps> = ({
               disabled={isLoading}
               fullWidth
             >
-              Reject Submission
+              Deny Submission
             </Button>
           </div>
         )}

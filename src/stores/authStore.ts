@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { toast } from 'react-toastify';
 import { AuthState, AdminUser } from '../types';
 import { supabase } from '../lib/supabase';
 
@@ -16,7 +17,18 @@ export const useAuthStore = create<AuthState>((set) => ({
       });
 
       if (error) {
-        throw new Error(error.message);
+        // Enhanced error handling for common authentication errors
+        let errorMessage = error.message;
+        
+        if (error.message.includes('Invalid login credentials')) {
+          errorMessage = 'Invalid email or password';
+        } else if (error.message.includes('Email not confirmed')) {
+          errorMessage = 'Please check your email and confirm your account before logging in';
+        } else if (error.message.includes('Too many requests')) {
+          errorMessage = 'Too many login attempts. Please wait before trying again';
+        }
+        
+        throw new Error(errorMessage);
       }
 
       if (data.user) {
@@ -51,7 +63,20 @@ export const useAuthStore = create<AuthState>((set) => ({
       });
 
       if (error) {
-        throw new Error(error.message);
+        // Enhanced error handling for common registration errors
+        let errorMessage = error.message;
+        
+        if (error.message.includes('User already registered')) {
+          errorMessage = 'An account with this email already exists';
+        } else if (error.message.includes('Password should be at least')) {
+          errorMessage = 'Password must be at least 6 characters long';
+        } else if (error.message.includes('Unable to validate email address')) {
+          errorMessage = 'Please enter a valid email address';
+        } else if (error.message.includes('Signup is disabled')) {
+          errorMessage = 'Account registration is currently disabled';
+        }
+        
+        throw new Error(errorMessage);
       }
 
       if (data.user) {
@@ -72,6 +97,7 @@ export const useAuthStore = create<AuthState>((set) => ({
 
   logout: async () => {
     await supabase.auth.signOut();
+    toast.success('You have been logged out successfully.');
     set({ user: null, isAuthenticated: false });
   },
 
@@ -99,7 +125,7 @@ export const useAuthStore = create<AuthState>((set) => ({
 }));
 
 // Set up auth state listener
-supabase.auth.onAuthStateChange((event, session) => {
+supabase.auth.onAuthStateChange((event: string, session) => {
   if (event === 'SIGNED_IN' && session?.user) {
     const adminUser: AdminUser = {
       id: session.user.id,
