@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Check, X, MessageSquare } from 'lucide-react';
+import { Check, X} from 'lucide-react';
 import { FloorplanSubmission } from '../../types';
 import { Button } from '../ui/Button';
 import { Card } from '../ui/Card';

@@ -1,7 +1,8 @@
 import { create } from 'zustand';
 import { AuthState, AdminUser } from '../types';
+import { supabase } from '../lib/supabase';
 
-export const useAuthStore = create<AuthState>((set, get) => ({
+export const useAuthStore = create<AuthState>((set) => ({
   user: null,
   isAuthenticated: false,
   isLoading: false,
@@ -9,19 +10,25 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   login: async (email: string, password: string) => {
     set({ isLoading: true });
     try {
-      // TODO: Implement actual authentication with Supabase
-      // For now, simulate admin login
-      if (email.trim() === 'admin@terraprice.com' && password.trim() === 'admin123') {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: email.trim(),
+        password: password.trim(),
+      });
+
+      if (error) {
+        throw new Error(error.message);
+      }
+
+      if (data.user) {
+        // Create admin user object from Supabase user
         const adminUser: AdminUser = {
-          id: '1',
-          email,
-          fullName: 'Admin User',
-          role: 'admin'
+          id: data.user.id,
+          email: data.user.email || '',
+          fullName: data.user.user_metadata?.full_name || data.user.email || '',
+          role: data.user.user_metadata?.role || 'admin'
         };
-        localStorage.setItem('terraprice_admin', JSON.stringify(adminUser));
+        
         set({ user: adminUser, isAuthenticated: true, isLoading: false });
-      } else {
-        throw new Error('Invalid credentials');
       }
     } catch (error) {
       set({ isLoading: false });
@@ -29,16 +36,80 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     }
   },
 
-  logout: () => {
-    localStorage.removeItem('terraprice_admin');
+  register: async (email: string, password: string, fullName: string) => {
+    set({ isLoading: true });
+    try {
+      const { data, error } = await supabase.auth.signUp({
+        email: email.trim(),
+        password: password.trim(),
+        options: {
+          data: {
+            full_name: fullName,
+            role: 'admin'
+          }
+        }
+      });
+
+      if (error) {
+        throw new Error(error.message);
+      }
+
+      if (data.user) {
+        const adminUser: AdminUser = {
+          id: data.user.id,
+          email: data.user.email || '',
+          fullName: fullName,
+          role: 'admin'
+        };
+        
+        set({ user: adminUser, isAuthenticated: true, isLoading: false });
+      }
+    } catch (error) {
+      set({ isLoading: false });
+      throw error;
+    }
+  },
+
+  logout: async () => {
+    await supabase.auth.signOut();
     set({ user: null, isAuthenticated: false });
   },
 
-  checkAuth: () => {
-    const stored = localStorage.getItem('terraprice_admin');
-    if (stored) {
-      const user = JSON.parse(stored);
-      set({ user, isAuthenticated: true });
+  checkAuth: async () => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (session?.user) {
+        const adminUser: AdminUser = {
+          id: session.user.id,
+          email: session.user.email || '',
+          fullName: session.user.user_metadata?.full_name || session.user.email || '',
+          role: session.user.user_metadata?.role || 'admin'
+        };
+        
+        set({ user: adminUser, isAuthenticated: true });
+      } else {
+        set({ user: null, isAuthenticated: false });
+      }
+    } catch (error) {
+      console.error('Error checking auth:', error);
+      set({ user: null, isAuthenticated: false });
     }
   },
 }));
+
+// Set up auth state listener
+supabase.auth.onAuthStateChange((event, session) => {
+  if (event === 'SIGNED_IN' && session?.user) {
+    const adminUser: AdminUser = {
+      id: session.user.id,
+      email: session.user.email || '',
+      fullName: session.user.user_metadata?.full_name || session.user.email || '',
+      role: session.user.user_metadata?.role || 'admin'
+    };
+    
+    useAuthStore.setState({ user: adminUser, isAuthenticated: true });
+  } else if (event === 'SIGNED_OUT') {
+    useAuthStore.setState({ user: null, isAuthenticated: false });
+  }
+});
