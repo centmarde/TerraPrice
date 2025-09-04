@@ -1,0 +1,132 @@
+import React from 'react';
+import { Outlet, NavLink, useNavigate } from 'react-router-dom';
+import { 
+  LayoutDashboard, 
+  FileImage, 
+  Users, 
+  Settings, 
+  LogOut,
+  Menu,
+  X
+} from 'lucide-react';
+import { useAuthStore } from '../../stores/authStore';
+import { Logo } from '../ui/Logo';
+import { Button } from '../ui/Button';
+
+const AdminLayout: React.FC = () => {
+  const [sidebarOpen, setSidebarOpen] = React.useState(false);
+  const { user, logout } = useAuthStore();
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    logout();
+    navigate('/');
+  };
+
+  const navigationItems = [
+    { to: '/admin/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
+    { to: '/admin/floorplans', icon: FileImage, label: 'Floorplans' },
+    { to: '/admin/users', icon: Users, label: 'Users' },
+    { to: '/admin/settings', icon: Settings, label: 'Settings' },
+  ];
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      {/* Mobile sidebar backdrop */}
+      {sidebarOpen && (
+        <div 
+          className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+
+      {/* Sidebar */}
+      <div className={`
+        fixed inset-y-0 left-0 z-50 w-64 bg-white shadow-xl transform transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0
+        ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}
+      `}>
+        <div className="flex flex-col h-full">
+          {/* Logo and close button */}
+          <div className="flex items-center justify-between p-6 border-b border-gray-200">
+            <Logo size="sm" />
+            <button
+              onClick={() => setSidebarOpen(false)}
+              className="lg:hidden p-2 rounded-lg hover:bg-gray-100"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+
+          {/* Navigation */}
+          <nav className="flex-1 px-4 py-6">
+            <ul className="space-y-2">
+              {navigationItems.map((item) => (
+                <li key={item.to}>
+                  <NavLink
+                    to={item.to}
+                    className={({ isActive }) => `
+                      flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors duration-200
+                      ${isActive 
+                        ? 'bg-teal-100 text-teal-700 border-r-2 border-teal-700' 
+                        : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+                      }
+                    `}
+                    onClick={() => setSidebarOpen(false)}
+                  >
+                    <item.icon className="w-5 h-5 mr-3" />
+                    {item.label}
+                  </NavLink>
+                </li>
+              ))}
+            </ul>
+          </nav>
+
+          {/* User info and logout */}
+          <div className="p-4 border-t border-gray-200">
+            <div className="mb-3">
+              <p className="text-sm font-medium text-gray-900">{user?.fullName}</p>
+              <p className="text-xs text-gray-500">{user?.email}</p>
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              icon={LogOut}
+              onClick={handleLogout}
+              fullWidth
+            >
+              Sign Out
+            </Button>
+          </div>
+        </div>
+      </div>
+
+      {/* Main content */}
+      <div className="lg:ml-64">
+        {/* Top bar */}
+        <header className="bg-white shadow-sm border-b border-gray-200">
+          <div className="flex items-center justify-between px-6 py-4">
+            <button
+              onClick={() => setSidebarOpen(true)}
+              className="lg:hidden p-2 rounded-lg hover:bg-gray-100"
+            >
+              <Menu className="w-5 h-5" />
+            </button>
+            <h1 className="text-2xl font-semibold text-gray-900">
+              TerraPrice Admin
+            </h1>
+            <div className="hidden lg:block">
+              <p className="text-sm text-gray-600">Welcome back, {user?.fullName}</p>
+            </div>
+          </div>
+        </header>
+
+        {/* Page content */}
+        <main className="p-6">
+          <Outlet />
+        </main>
+      </div>
+    </div>
+  );
+};
+
+export default AdminLayout;
