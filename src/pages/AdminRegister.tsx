@@ -1,26 +1,23 @@
 import React, { useState } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../stores/authStore';
 import { Logo } from '../components/ui/Logo';
 import { Card } from '../components/ui/Card';
-import LoginForm, { LoginFormData } from '../components/auth/LoginForm';
+import RegisterForm, { RegisterFormData } from '../components/auth/RegisterForm';
 
-const AdminLogin: React.FC = () => {
+const AdminRegister: React.FC = () => {
   const navigate = useNavigate();
-  const location = useLocation();
-  const { login, isLoading } = useAuthStore();
+  const { register, isLoading } = useAuthStore();
   const [error, setError] = useState<string>('');
 
-  const from = (location.state as { from?: { pathname: string } })?.from?.pathname || '/admin/dashboard';
-
-  const handleLogin = async (data: LoginFormData) => {
-    console.log('Form submitted with data:', data);
+  const handleRegister = async (data: RegisterFormData) => {
     try {
       setError('');
-      await login(data.email, data.password);
-      navigate(from, { replace: true });
-    } catch {
-      setError('Invalid email or password');
+      const fullName = `${data.firstName} ${data.lastName}`;
+      await register(data.email, data.password, fullName);
+      navigate('/admin/dashboard', { replace: true });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Registration failed');
     }
   };
 
@@ -30,16 +27,16 @@ const AdminLogin: React.FC = () => {
         <div className="text-center mb-8">
           <Logo size="lg" className="justify-center mb-4" />
           <h2 className="text-2xl font-bold text-gray-900 mb-2">
-            Admin Dashboard
+            Create Admin Account
           </h2>
           <p className="text-gray-600">
-            Sign in to review floorplan submissions
+            Register to access the admin dashboard
           </p>
         </div>
 
         <Card>
-          <LoginForm
-            onSubmit={handleLogin}
+          <RegisterForm
+            onSubmit={handleRegister}
             isLoading={isLoading}
             error={error}
           />
@@ -47,10 +44,10 @@ const AdminLogin: React.FC = () => {
 
         <div className="text-center mt-6">
           <button
-            onClick={() => navigate('/admin/register')}
+            onClick={() => navigate('/admin/login')}
             className="text-sm text-teal-600 hover:text-teal-700"
           >
-            Don't have an account? Register here
+            Already have an account? Sign in
           </button>
         </div>
 
@@ -67,4 +64,4 @@ const AdminLogin: React.FC = () => {
   );
 };
 
-export default AdminLogin;
+export default AdminRegister;
