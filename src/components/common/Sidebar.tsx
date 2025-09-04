@@ -2,9 +2,9 @@ import React from 'react';
 import { NavLink } from 'react-router-dom';
 import { 
   LayoutDashboard, 
-  FileImage, 
-  Users, 
-  Settings, 
+//   FileImage, 
+//   Users, 
+//   Settings, 
   LogOut,
   X
 } from 'lucide-react';
@@ -23,9 +23,9 @@ const Sidebar: React.FC<SidebarProps> = ({ sidebarOpen, setSidebarOpen, onLogout
 
   const navigationItems = [
     { to: '/admin/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
-    { to: '/admin/floorplans', icon: FileImage, label: 'Floorplans' },
+    /* { to: '/admin/floorplans', icon: FileImage, label: 'Floorplans' },
     { to: '/admin/users', icon: Users, label: 'Users' },
-    { to: '/admin/settings', icon: Settings, label: 'Settings' },
+    { to: '/admin/settings', icon: Settings, label: 'Settings' }, */
   ];
 
   return (
