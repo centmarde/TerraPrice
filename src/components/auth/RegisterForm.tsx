@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
-import { Mail, Lock, User, AlertCircle } from 'lucide-react';
+import { Mail, Lock, User } from 'lucide-react';
+import { toast } from 'react-toastify';
 import { Input } from '../ui/Input';
 import { Button } from '../ui/Button';
 import { registerValidationSchema, ValidationMessages } from '../../utils/validators';
@@ -31,20 +32,21 @@ const RegisterForm: React.FC<RegisterFormProps> = ({
 
   const password = watch('password');
 
+  // Show toast when error changes
+  useEffect(() => {
+    if (error) {
+      toast.error(error);
+    }
+  }, [error]);
+
   const handleFormSubmit = async (data: RegisterFormData) => {
     await onSubmit(data);
   };
 
   return (
-    <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-6">
-      {error && (
-        <div className="flex items-center p-3 bg-red-50 border border-red-200 rounded-lg">
-          <AlertCircle className="w-5 h-5 text-red-600 mr-2" />
-          <span className="text-sm text-red-600">{error}</span>
-        </div>
-      )}
-
-      <div className="space-y-4">
+    <div className="space-y-6">
+      <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-6">
+        <div className="space-y-4">
         <div className="grid grid-cols-2 gap-4">
           <Input
             {...register('firstName', registerValidationSchema.firstName)}
@@ -104,7 +106,8 @@ const RegisterForm: React.FC<RegisterFormProps> = ({
       >
         {isLoading ? 'Creating Account...' : 'Create Account'}
       </Button>
-    </form>
+      </form>
+    </div>
   );
 };
 

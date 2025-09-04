@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { toast } from 'react-toastify';
 import { useAuthStore } from '../stores/authStore';
 import { Logo } from '../components/ui/Logo';
 import { Card } from '../components/ui/Card';
@@ -8,19 +9,39 @@ import LoginForm, { LoginFormData } from '../components/auth/LoginForm';
 const AdminLogin: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { login, isLoading } = useAuthStore();
-  const [error, setError] = useState<string>('');
+  const { login } = useAuthStore();
 
   const from = (location.state as { from?: { pathname: string } })?.from?.pathname || '/admin/dashboard';
 
   const handleLogin = async (data: LoginFormData) => {
     console.log('Form submitted with data:', data);
     try {
-      setError('');
       await login(data.email, data.password);
+      toast.success('Login successful! Welcome back.');
       navigate(from, { replace: true });
-    } catch {
-      setError('Invalid email or password');
+    } catch (err) {
+      console.error('Login error:', err);
+      
+      // Handle different types of errors
+      if (err instanceof Error) {
+        const message = err.message.toLowerCase();
+        
+        if (message.includes('invalid login credentials') || 
+            message.includes('invalid email or password') ||
+            message.includes('email not confirmed') ||
+            message.includes('user not found') ||
+            message.includes('wrong password')) {
+          toast.error('Invalid email or password. Please check your credentials and try again.');
+        } else if (message.includes('too many requests') || message.includes('rate limit')) {
+          toast.error('Too many login attempts. Please wait a moment before trying again.');
+        } else if (message.includes('network') || message.includes('fetch')) {
+          toast.error('Network connection error. Please check your internet connection and try again.');
+        } else {
+          toast.error(err.message || 'Login failed. Please try again.');
+        }
+      } else {
+        toast.error('An unexpected error occurred. Please try again.');
+      }
     }
   };
 
@@ -29,19 +50,12 @@ const AdminLogin: React.FC = () => {
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <Logo size="lg" className="justify-center mb-4" />
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">
-            Admin Dashboard
-          </h2>
-          <p className="text-gray-600">
-            Sign in to review floorplan submissions
-          </p>
+        
         </div>
 
         <Card>
           <LoginForm
             onSubmit={handleLogin}
-            isLoading={isLoading}
-            error={error}
           />
         </Card>
 

@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
-import { Mail, Lock, AlertCircle } from 'lucide-react';
+import { Mail, Lock } from 'lucide-react';
+import { toast } from 'react-toastify';
 import { Input } from '../ui/Input';
 import { Button } from '../ui/Button';
 import { loginValidationSchema } from '../../utils/validators';
@@ -12,13 +13,11 @@ interface LoginFormData {
 
 interface LoginFormProps {
   onSubmit: (data: LoginFormData) => Promise<void>;
-  isLoading?: boolean;
   error?: string;
 }
 
 const LoginForm: React.FC<LoginFormProps> = ({
   onSubmit,
-  isLoading = false,
   error = '',
 }) => {
   const { register, handleSubmit, formState: { errors } } = useForm<LoginFormData>({
@@ -27,20 +26,21 @@ const LoginForm: React.FC<LoginFormProps> = ({
     defaultValues: { email: '', password: '' },
   });
 
+  // Show toast when error changes
+  useEffect(() => {
+    if (error) {
+      toast.error(error);
+    }
+  }, [error]);
+
   const handleFormSubmit = async (data: LoginFormData) => {
     await onSubmit(data);
   };
 
   return (
-    <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-6">
-      {error && (
-        <div className="flex items-center p-3 bg-red-50 border border-red-200 rounded-lg">
-          <AlertCircle className="w-5 h-5 text-red-600 mr-2" />
-          <span className="text-sm text-red-600">{error}</span>
-        </div>
-      )}
-
-      <div className="space-y-4">
+    <div className="space-y-6">
+      <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-6">
+        <div className="space-y-4">
         <Input
           {...register('email', loginValidationSchema.email)}
           type="email"
@@ -62,13 +62,13 @@ const LoginForm: React.FC<LoginFormProps> = ({
 
       <Button
         type="submit"
-        disabled={isLoading}
         fullWidth
         size="lg"
       >
-        {isLoading ? 'Signing in...' : 'Sign In'}
+        Sign In
       </Button>
-    </form>
+      </form>
+    </div>
   );
 };
 

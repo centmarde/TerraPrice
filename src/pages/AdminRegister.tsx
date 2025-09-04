@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { toast } from 'react-toastify';
 import { useAuthStore } from '../stores/authStore';
 import { Logo } from '../components/ui/Logo';
 import { Card } from '../components/ui/Card';
@@ -15,9 +16,35 @@ const AdminRegister: React.FC = () => {
       setError('');
       const fullName = `${data.firstName} ${data.lastName}`;
       await register(data.email, data.password, fullName);
+      toast.success('Account created successfully! Welcome to TerraPrice.');
       navigate('/admin/dashboard', { replace: true });
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Registration failed');
+      console.error('Registration error:', err);
+      
+      // Handle different types of errors
+      if (err instanceof Error) {
+        const message = err.message.toLowerCase();
+        
+        if (message.includes('email already registered') || 
+            message.includes('user already exists') ||
+            message.includes('email address is already registered')) {
+          setError('An account with this email already exists. Please use a different email or try logging in.');
+        } else if (message.includes('password') && message.includes('weak')) {
+          setError('Password is too weak. Please choose a stronger password with at least 8 characters.');
+        } else if (message.includes('invalid email') || message.includes('email format')) {
+          setError('Please enter a valid email address.');
+        } else if (message.includes('signup') && message.includes('disabled')) {
+          setError('Account registration is currently disabled. Please contact support.');
+        } else if (message.includes('too many requests') || message.includes('rate limit')) {
+          setError('Too many registration attempts. Please wait a moment before trying again.');
+        } else if (message.includes('network') || message.includes('fetch')) {
+          setError('Network connection error. Please check your internet connection and try again.');
+        } else {
+          setError(err.message || 'Registration failed. Please try again.');
+        }
+      } else {
+        setError('An unexpected error occurred during registration. Please try again.');
+      }
     }
   };
 
