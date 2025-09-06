@@ -1,3 +1,60 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Smooth transitions for theme changes */
+* {
+  transition: background-color 200ms ease-in-out, border-color 200ms ease-in-out, color 200ms ease-in-out;
+}
+
+/* Ensure proper layering */
+.sidebar-overlay {
+  z-index: 40;
+}
+
+.sidebar {
+  z-index: 50;
+}
+
+/* Prevent layout shift and text overlap */
+body {
+  overflow-x: hidden;
+}
+
+/* Fix potential flexbox issues in admin header */
+.admin-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  height: 64px;
+  position: relative;
+}
+
+.admin-header > * {
+  flex-shrink: 0;
+}
+
+/* Ensure text doesn't overflow */
+.header-title {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Custom scrollbar for dark mode */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-gray-100 dark:bg-gray-800;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-gray-300 dark:bg-gray-600 rounded-full;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-gray-400 dark:bg-gray-500;
+}

@@ -28,10 +28,10 @@ export const Logo: React.FC<LogoProps> = ({
       </div>
       {showText && (
         <div className="flex flex-col">
-          <h1 className={`font-bold text-gray-900 ${text} leading-tight`}>
+          <h1 className={`font-bold text-gray-900 dark:text-white ${text} leading-tight transition-colors duration-200`}>
             TERRA PRICE
           </h1>
-          <p className="text-sm text-gray-600 font-medium tracking-wide">
+          <p className="text-sm text-gray-600 dark:text-gray-300 font-medium tracking-wide transition-colors duration-200">
             FLOORPLAN PREDICTION SYSTEM
           </p>
         </div>

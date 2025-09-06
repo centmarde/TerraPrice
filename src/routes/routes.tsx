@@ -8,6 +8,7 @@ import LandingPage from '../pages/LandingPage';
 import AdminLogin from '../pages/AdminLogin';
 import AdminRegister from '../pages/AdminRegister';
 import Dashboard from '../pages/Dashboard';
+import ReviewHistory from '../pages/ReviewHistory';
 import FloorplanList from '../pages/FloorplanList';
 import FloorplanReview from '../pages/FloorplanReview';
 import UsersPage from '../pages/UsersPage';
@@ -58,6 +59,10 @@ export const routes: RouteObject[] = [
       {
         path: 'dashboard',
         element: <Dashboard />
+      },
+      {
+        path: 'history',
+        element: <ReviewHistory />
       },
       {
         path: 'floorplans',

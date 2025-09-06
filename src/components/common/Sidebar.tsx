@@ -2,7 +2,8 @@ import React from 'react';
 import { NavLink } from 'react-router-dom';
 import { 
   LayoutDashboard, 
-//   FileImage, 
+  FileImage, 
+  History,
 //   Users, 
 //   Settings, 
   LogOut,
@@ -23,6 +24,7 @@ const Sidebar: React.FC<SidebarProps> = ({ sidebarOpen, setSidebarOpen, onLogout
 
   const navigationItems = [
     { to: '/admin/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
+    { to: '/admin/history', icon: History, label: 'Review History' },
     /* { to: '/admin/floorplans', icon: FileImage, label: 'Floorplans' },
     { to: '/admin/users', icon: Users, label: 'Users' },
     { to: '/admin/settings', icon: Settings, label: 'Settings' }, */
@@ -30,16 +32,16 @@ const Sidebar: React.FC<SidebarProps> = ({ sidebarOpen, setSidebarOpen, onLogout
 
   return (
     <div className={`
-      fixed inset-y-0 left-0 z-50 w-64 bg-white shadow-xl transform transition-transform duration-300 ease-in-out
+      fixed inset-y-0 left-0 z-50 w-64 bg-white dark:bg-gray-900 shadow-xl transform transition-transform duration-300 ease-in-out
       ${sidebarOpen ? 'translate-x-0' : 'lg:translate-x-0 -translate-x-full'}
     `}>
       <div className="flex flex-col h-full">
         {/* Logo and close button */}
-        <div className="flex items-center justify-between p-6 border-b border-gray-200">
+        <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
           <Logo size="sm" />
           <button
             onClick={() => setSidebarOpen(false)}
-            className="lg:hidden p-2 rounded-lg hover:bg-gray-100"
+            className="lg:hidden p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-300"
           >
             <X className="w-5 h-5" />
           </button>
@@ -55,8 +57,8 @@ const Sidebar: React.FC<SidebarProps> = ({ sidebarOpen, setSidebarOpen, onLogout
                   className={({ isActive }) => `
                     flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors duration-200
                     ${isActive 
-                      ? 'bg-teal-100 text-teal-700 border-r-2 border-teal-700' 
-                      : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+                      ? 'bg-teal-100 dark:bg-teal-900/50 text-teal-700 dark:text-teal-300 border-r-2 border-teal-700 dark:border-teal-300' 
+                      : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white'
                     }
                   `}
                   onClick={() => setSidebarOpen(false)}
@@ -70,10 +72,10 @@ const Sidebar: React.FC<SidebarProps> = ({ sidebarOpen, setSidebarOpen, onLogout
         </nav>
 
         {/* User info and logout */}
-        <div className="p-4 border-t border-gray-200">
+        <div className="p-4 border-t border-gray-200 dark:border-gray-700">
           <div className="mb-3">
-            <p className="text-sm font-medium text-gray-900">{user?.fullName}</p>
-            <p className="text-xs text-gray-500">{user?.email}</p>
+            <p className="text-sm font-medium text-gray-900 dark:text-white">{user?.fullName}</p>
+            <p className="text-xs text-gray-500 dark:text-gray-400">{user?.email}</p>
           </div>
           <Button
             variant="outline"
