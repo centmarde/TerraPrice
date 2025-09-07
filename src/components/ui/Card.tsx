@@ -5,13 +5,15 @@ interface CardProps {
   className?: string;
   padding?: 'sm' | 'md' | 'lg';
   hover?: boolean;
+  animated?: boolean;
 }
 
 export const Card: React.FC<CardProps> = ({
   children,
   className = '',
   padding = 'md',
-  hover = false
+  hover = false,
+  animated = false
 }) => {
   const paddingClasses = {
     sm: 'p-4',
@@ -20,11 +22,15 @@ export const Card: React.FC<CardProps> = ({
   };
 
   const hoverClasses = hover 
-    ? 'hover:shadow-lg hover:-translate-y-1 transition-all duration-200 cursor-pointer' 
+    ? 'hover:shadow-xl hover:-translate-y-2 hover:shadow-gray-200/20 dark:hover:shadow-gray-900/40 transition-all duration-300 cursor-pointer group' 
+    : '';
+
+  const animatedClasses = animated
+    ? 'animate-fadeInUp opacity-0 [animation-fill-mode:forwards]'
     : '';
 
   return (
-    <div className={`bg-white dark:bg-gray-800 rounded-xl shadow-md dark:shadow-gray-900/20 border border-gray-100 dark:border-gray-700 transition-colors duration-200 ${paddingClasses[padding]} ${hoverClasses} ${className}`}>
+    <div className={`bg-white dark:bg-gray-800 rounded-xl shadow-md dark:shadow-gray-900/20 border border-gray-100 dark:border-gray-700 transition-colors duration-200 ${paddingClasses[padding]} ${hoverClasses} ${animatedClasses} ${className}`}>
       {children}
     </div>
   );

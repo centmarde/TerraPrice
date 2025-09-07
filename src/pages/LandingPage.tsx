@@ -55,36 +55,42 @@ const LandingPage: React.FC = () => {
       {/* Main content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 py-8 sm:py-16">
         {/* Hero section */}
-        <div className="text-center mb-12 sm:mb-16">
+        <div className="text-center mb-12 sm:mb-16 animate-fadeInUp">
           <h1 className="text-2xl sm:text-4xl lg:text-5xl font-bold text-gray-900 dark:text-white mb-4 sm:mb-6 transition-colors duration-200 px-2">
             Smart Land Pricing Solutions
           </h1>
-          <p className="text-base sm:text-xl text-gray-600 dark:text-gray-300 mb-6 sm:mb-8 max-w-3xl mx-auto transition-colors duration-200 px-4">
+          <p className="text-base sm:text-xl text-gray-600 dark:text-gray-300 mb-6 sm:mb-8 max-w-3xl mx-auto transition-colors duration-200 px-4 animate-fadeInUp animate-delay-200 opacity-0">
             Revolutionary floorplan analysis system that provides accurate building cost estimates 
             through advanced AI prediction technology.
           </p>
-          <Button 
-            size="md"
-            onClick={() => navigate('/admin/login')}
-            className="shadow-lg sm:hidden"
-          >
-            Access Dashboard
-          </Button>
-          <Button 
-            size="lg"
-            onClick={() => navigate('/admin/login')}
-            className="shadow-lg hidden sm:inline-flex"
-          >
-            Access Admin Dashboard
-          </Button>
+          <div className="animate-fadeInUp animate-delay-400 opacity-0">
+            <Button 
+              size="md"
+              onClick={() => navigate('/admin/login')}
+              className="shadow-lg sm:hidden"
+            >
+              Access Dashboard
+            </Button>
+            <Button 
+              size="lg"
+              onClick={() => navigate('/admin/login')}
+              className="shadow-lg hidden sm:inline-flex"
+            >
+              Access Admin Dashboard
+            </Button>
+          </div>
         </div>
 
         {/* Features grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-8 mb-12 sm:mb-16">
           {features.map((feature, index) => (
-            <Card key={index} className="text-center p-4 sm:p-6">
-              <div className="inline-flex items-center justify-center w-12 h-12 sm:w-16 sm:h-16 bg-teal-100 dark:bg-teal-900/50 rounded-full mb-3 sm:mb-4 transition-colors duration-200">
-                <feature.icon className="w-6 h-6 sm:w-8 sm:h-8 text-teal-700 dark:text-teal-300" />
+            <Card 
+              key={index} 
+              className={`text-center p-4 sm:p-6 animate-fadeInUp animate-delay-${(index + 2) * 100} opacity-0`}
+              hover={true}
+            >
+              <div className="inline-flex items-center justify-center w-12 h-12 sm:w-16 sm:h-16 bg-teal-100 dark:bg-teal-900/50 rounded-full mb-3 sm:mb-4 transition-all duration-300 group-hover:scale-110 group-hover:bg-teal-200 dark:group-hover:bg-teal-900/70">
+                <feature.icon className="w-6 h-6 sm:w-8 sm:h-8 text-teal-700 dark:text-teal-300 transition-transform duration-300 group-hover:scale-110" />
               </div>
               <h3 className="text-lg sm:text-xl font-semibold text-gray-900 dark:text-white mb-2 transition-colors duration-200">
                 {feature.title}
@@ -97,7 +103,7 @@ const LandingPage: React.FC = () => {
         </div>
 
         {/* CTA section */}
-        <div className="bg-teal-700 dark:bg-teal-800 rounded-xl sm:rounded-2xl p-6 sm:p-8 lg:p-12 text-center text-white transition-colors duration-200">
+        <div className="bg-teal-700 dark:bg-teal-800 rounded-xl sm:rounded-2xl p-6 sm:p-8 lg:p-12 text-center text-white transition-all duration-300 hover:bg-teal-800 dark:hover:bg-teal-700 transform hover:scale-[1.02] animate-fadeInUp animate-delay-500 opacity-0">
           <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold mb-3 sm:mb-4">
             Ready to Review Submissions?
           </h2>

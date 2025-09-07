@@ -231,12 +231,15 @@ export const MobileUploadsSection: React.FC<MobileUploadsProps> = ({
         <>
           {/* Upload Cards */}
           <div className="space-y-3">
-            {paginatedUploads.map((upload) => (
+            {paginatedUploads.map((upload, index) => (
               <div 
                 key={upload.id}
-                className="group p-4 border border-gray-200 dark:border-gray-600 rounded-lg
-                         bg-white dark:bg-gray-700/50 hover:shadow-md hover:border-teal-300 dark:hover:border-teal-600
-                         transition-all duration-200 cursor-pointer"
+                className={`group p-4 border border-gray-200 dark:border-gray-600 rounded-lg
+                         bg-white dark:bg-gray-700/50 hover:shadow-lg hover:border-teal-300 dark:hover:border-teal-600
+                         hover:bg-gray-50 dark:hover:bg-gray-700/70 hover:-translate-y-1
+                         transition-all duration-300 cursor-pointer transform
+                         animate-fadeInUp opacity-0`}
+                style={{ animationDelay: `${index * 100}ms` }}
               >
                 <div className="flex items-center justify-between">
                   {/* File Info */}
@@ -305,12 +308,12 @@ export const MobileUploadsSection: React.FC<MobileUploadsProps> = ({
                   </div>
 
                   {/* Action Buttons */}
-                  <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-all duration-200">
+                  <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-x-2 group-hover:translate-x-0">
                     <button
                       onClick={() => handleViewUpload(upload)}
                       className="p-2 rounded-lg bg-teal-50 hover:bg-teal-100 dark:bg-teal-900/20 dark:hover:bg-teal-900/40 
                                text-teal-600 dark:text-teal-400 hover:text-teal-700 dark:hover:text-teal-300
-                               transition-all duration-200 hover:scale-105 active:scale-95"
+                               transition-all duration-200 hover:scale-110 active:scale-95 hover:shadow-md hover:shadow-teal-200/50"
                       title="View Details"
                     >
                       <Eye className="w-4 h-4" />
@@ -319,7 +322,7 @@ export const MobileUploadsSection: React.FC<MobileUploadsProps> = ({
                       onClick={() => handleDownloadUpload(upload)}
                       className="p-2 rounded-lg bg-blue-50 hover:bg-blue-100 dark:bg-blue-900/20 dark:hover:bg-blue-900/40 
                                text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300
-                               transition-all duration-200 hover:scale-105 active:scale-95"
+                               transition-all duration-200 hover:scale-110 active:scale-95 hover:shadow-md hover:shadow-blue-200/50"
                       title="Download File"
                     >
                       <Download className="w-4 h-4" />
@@ -353,10 +356,10 @@ export const MobileUploadsSection: React.FC<MobileUploadsProps> = ({
                     <button
                       key={pageNum}
                       onClick={() => setCurrentPage(pageNum)}
-                      className={`w-8 h-8 rounded-lg text-sm font-medium transition-colors duration-200 ${
+                      className={`w-8 h-8 rounded-lg text-sm font-medium transition-all duration-300 transform hover:scale-110 active:scale-95 ${
                         pageNum === currentPage
-                          ? 'bg-teal-700 text-white dark:bg-teal-600'
-                          : 'text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-700'
+                          ? 'bg-teal-700 text-white dark:bg-teal-600 shadow-lg shadow-teal-500/25'
+                          : 'text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-gray-200'
                       }`}
                     >
                       {pageNum}

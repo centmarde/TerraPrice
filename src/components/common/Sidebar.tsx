@@ -60,20 +60,20 @@ const Sidebar: React.FC<SidebarProps> = ({ sidebarOpen, setSidebarOpen, onLogout
         {/* Navigation */}
         <nav className="flex-1 px-4 py-6">
           <ul className="space-y-2">
-            {navigationItems.map((item) => (
-              <li key={item.to}>
+            {navigationItems.map((item, index) => (
+              <li key={item.to} className={`animate-slideInLeft animate-delay-${index * 100} opacity-0`}>
                 <NavLink
                   to={item.to}
                   className={({ isActive }) => `
-                    flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors duration-200
+                    flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-all duration-300 transform hover:scale-105 group
                     ${isActive 
-                      ? 'bg-teal-100 dark:bg-teal-900/50 text-teal-700 dark:text-teal-300 border-r-2 border-teal-700 dark:border-teal-300' 
-                      : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white'
+                      ? 'bg-teal-100 dark:bg-teal-900/50 text-teal-700 dark:text-teal-300 border-r-2 border-teal-700 dark:border-teal-300 shadow-md' 
+                      : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white hover:shadow-sm'
                     }
                   `}
                   onClick={() => setSidebarOpen(false)}
                 >
-                  <item.icon className="w-5 h-5 mr-3" />
+                  <item.icon className="w-5 h-5 mr-3 transition-transform duration-300 group-hover:scale-110" />
                   {item.label}
                 </NavLink>
               </li>
