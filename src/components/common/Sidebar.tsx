@@ -31,21 +31,31 @@ const Sidebar: React.FC<SidebarProps> = ({ sidebarOpen, setSidebarOpen, onLogout
   ];
 
   return (
-    <div className={`
-      fixed inset-y-0 left-0 z-50 w-64 bg-white dark:bg-gray-900 shadow-xl transform transition-transform duration-300 ease-in-out
-      ${sidebarOpen ? 'translate-x-0' : 'lg:translate-x-0 -translate-x-full'}
-    `}>
-      <div className="flex flex-col h-full">
-        {/* Logo and close button */}
-        <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
-          <Logo size="sm" />
-          <button
-            onClick={() => setSidebarOpen(false)}
-            className="lg:hidden p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-300"
-          >
-            <X className="w-5 h-5" />
-          </button>
-        </div>
+    <>
+      {/* Mobile overlay */}
+      {sidebarOpen && (
+        <div 
+          className="fixed inset-0 z-40 bg-black/50 lg:hidden"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+      
+      {/* Sidebar */}
+      <div className={`
+        fixed inset-y-0 left-0 z-50 w-64 bg-white dark:bg-gray-900 shadow-xl transform transition-transform duration-300 ease-in-out
+        ${sidebarOpen ? 'translate-x-0' : 'lg:translate-x-0 -translate-x-full'}
+      `}>
+        <div className="flex flex-col h-full">
+          {/* Logo and close button */}
+          <div className="flex items-center justify-between p-4 lg:p-6 border-b border-gray-200 dark:border-gray-700">
+            <Logo size="sm" showText={false} />
+            <button
+              onClick={() => setSidebarOpen(false)}
+              className="lg:hidden p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-300"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
 
         {/* Navigation */}
         <nav className="flex-1 px-4 py-6">
@@ -87,8 +97,9 @@ const Sidebar: React.FC<SidebarProps> = ({ sidebarOpen, setSidebarOpen, onLogout
             Sign Out
           </Button>
         </div>
+        </div>
       </div>
-    </div>
+    </>
   );
 };
 

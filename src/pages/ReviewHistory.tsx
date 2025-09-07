@@ -15,6 +15,7 @@ import {
 import { useFloorplanStore } from '../stores/floorplanStore';
 import { Card, CardHeader } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
+import { LoadingDots } from '../components/ui/Loader';
 
 const ITEMS_PER_PAGE = 8;
 
@@ -185,8 +186,7 @@ const ReviewHistory: React.FC = () => {
         {/* Content */}
         {isLoading ? (
           <div className="flex items-center justify-center py-12">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-teal-700 dark:border-teal-400"></div>
-            <span className="ml-3 text-gray-600 dark:text-gray-300">Loading history...</span>
+            <LoadingDots size="lg" text="Loading history..." />
           </div>
         ) : sortedSubmissions.length === 0 ? (
           <div className="text-center py-12">

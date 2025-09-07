@@ -22,11 +22,7 @@ import NotFoundRedirect from './NotFoundRedirect';
 export const routes: RouteObject[] = [
   {
     path: '/',
-    element: (
-      <PublicRoute>
-        <LandingPage />
-      </PublicRoute>
-    )
+    element: <LandingPage />
   },
   {
     path: '/admin/login',

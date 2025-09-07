@@ -8,22 +8,17 @@ import {
   Search,
   Calendar,
   User,
-  MoreVertical
+  Eye,
+  Download,
+  ExternalLink
 } from 'lucide-react';
 import { Card, CardHeader } from '../ui/Card';
 import { Button } from '../ui/Button';
-
-interface MobileUpload {
-  id: number;
-  file_name: string | null;
-  file_size: number | null;
-  status: string | null;
-  created_at: string | null;
-  userDetails?: {
-    fullName?: string;
-    email?: string;
-  };
-}
+import { LoadingSpinner } from '../ui/Loader';
+import { UploadViewModal } from '../ui/UploadViewModal';
+import { ToastContainer, useToast } from '../ui/Toast';
+import { MobileUpload } from '../../types';
+import { downloadFile, getSupabaseFileUrl } from '../../utils/fileUtils';
 
 interface MobileUploadsProps {
   uploads: MobileUpload[];
@@ -39,6 +34,11 @@ export const MobileUploadsSection: React.FC<MobileUploadsProps> = ({
   const [currentPage, setCurrentPage] = useState(1);
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [searchTerm, setSearchTerm] = useState('');
+  const [selectedUpload, setSelectedUpload] = useState<MobileUpload | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  
+  // Toast notifications
+  const { toasts, showToast, closeToast } = useToast();
 
   // Filter uploads based on search and status
   const filteredUploads = uploads.filter(upload => {
@@ -89,10 +89,77 @@ export const MobileUploadsSection: React.FC<MobileUploadsProps> = ({
     { value: 'denied', label: 'Denied' }
   ];
 
+  // Handler functions
+  const handleViewUpload = (upload: MobileUpload) => {
+    setSelectedUpload(upload);
+    setIsModalOpen(true);
+  };
+
+  const handleDownloadUpload = async (upload: MobileUpload) => {
+    console.log('Downloading upload:', upload);
+    
+    if (upload.file_path) {
+      try {
+        showToast({
+          type: 'info',
+          title: 'Download Starting',
+          message: `Preparing to download ${upload.file_name}...`,
+          duration: 3000
+        });
+        
+        // Convert Supabase storage path to public URL
+        const downloadUrl = getSupabaseFileUrl(upload.file_path);
+        console.log('Download URL conversion:', {
+          originalPath: upload.file_path,
+          downloadUrl: downloadUrl,
+          bucket: 'mobile_uploads'
+        });
+        
+        const result = await downloadFile(downloadUrl, upload.file_name || 'download');
+        
+        if (result.success) {
+          showToast({
+            type: 'success',
+            title: 'Download Started',
+            message: `${upload.file_name} download has begun successfully.`,
+            duration: 5000
+          });
+        } else {
+          showToast({
+            type: 'error',
+            title: 'Download Failed',
+            message: result.message || 'Unable to start download.',
+            duration: 7000
+          });
+        }
+      } catch (error) {
+        console.error('Download error:', error);
+        showToast({
+          type: 'error',
+          title: 'Download Error',
+          message: 'An unexpected error occurred. Please try again.',
+          duration: 7000
+        });
+      }
+    } else {
+      showToast({
+        type: 'warning',
+        title: 'No File Path',
+        message: 'This file cannot be downloaded as no file path is available.',
+        duration: 5000
+      });
+    }
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setSelectedUpload(null);
+  };
+
   return (
     <Card>
       <CardHeader 
-        title="Recent Mobile Uploads"
+        title="Mobile Uploads"
         subtitle={`${filteredUploads.length} total uploads${statusFilter !== 'all' ? ` (${statusFilter})` : ''}`}
         action={
           <div className="flex items-center space-x-2">
@@ -143,8 +210,7 @@ export const MobileUploadsSection: React.FC<MobileUploadsProps> = ({
       {/* Content */}
       {isLoading ? (
         <div className="flex items-center justify-center py-12">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-teal-700 dark:border-teal-400"></div>
-          <span className="ml-3 text-gray-600 dark:text-gray-300">Loading uploads...</span>
+          <LoadingSpinner size="lg" text="Loading uploads..." />
         </div>
       ) : filteredUploads.length === 0 ? (
         <div className="text-center py-12">
@@ -152,12 +218,12 @@ export const MobileUploadsSection: React.FC<MobileUploadsProps> = ({
             <Upload className="w-10 h-10 text-gray-400 dark:text-gray-500" />
           </div>
           <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
-            {searchTerm || statusFilter !== 'all' ? 'No matching uploads' : 'No recent uploads'}
+            {searchTerm || statusFilter !== 'all' ? 'No matching uploads' : 'No uploads yet'}
           </h3>
           <p className="text-gray-500 dark:text-gray-400 max-w-sm mx-auto">
             {searchTerm || statusFilter !== 'all' 
               ? 'Try adjusting your search terms or filters'
-              : 'Mobile uploads from users will appear here'
+              : 'Mobile uploads from users will appear here when available'
             }
           </p>
         </div>
@@ -175,8 +241,43 @@ export const MobileUploadsSection: React.FC<MobileUploadsProps> = ({
                 <div className="flex items-center justify-between">
                   {/* File Info */}
                   <div className="flex items-center space-x-4 flex-1 min-w-0">
-                    <div className="w-12 h-12 bg-teal-100 dark:bg-teal-900/30 rounded-lg flex items-center justify-center flex-shrink-0">
-                      <FileImage className="w-6 h-6 text-teal-600 dark:text-teal-400" />
+                    {/* File Thumbnail/Icon */}
+                    <div className="w-12 h-12 bg-teal-100 dark:bg-teal-900/30 rounded-lg flex items-center justify-center flex-shrink-0 overflow-hidden">
+                      {(() => {
+                        const isImage = upload.file_name && /\.(jpg|jpeg|png|gif|bmp|webp)$/i.test(upload.file_name);
+                        
+                        console.log('Upload debug:', {
+                          fileName: upload.file_name,
+                          filePath: upload.file_path,
+                          isImage: isImage
+                        });
+                        
+                        if (isImage && upload.file_path) {
+                          const imageUrl = getSupabaseFileUrl(upload.file_path);
+                          console.log('Converted image URL:', imageUrl);
+                          
+                          return (
+                            <img
+                              src={imageUrl}
+                              alt={upload.file_name}
+                              className="w-full h-full object-cover rounded-lg"
+                              onLoad={() => console.log('Image loaded successfully:', upload.file_name)}
+                              onError={(e) => {
+                                console.error('Image failed to load:', upload.file_name, 'Original path:', upload.file_path, 'Converted URL:', imageUrl);
+                                // Fallback to icon if image fails to load
+                                const target = e.target as HTMLImageElement;
+                                const parent = target.parentElement;
+                                if (parent) {
+                                  parent.innerHTML = '<div class="w-6 h-6 text-teal-600 dark:text-teal-400"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg></div>';
+                                }
+                              }}
+                            />
+                          );
+                        } else {
+                          console.log('Not an image or no file path, showing icon for:', upload.file_name);
+                          return <FileImage className="w-6 h-6 text-teal-600 dark:text-teal-400" />;
+                        }
+                      })()}
                     </div>
                     
                     <div className="flex-1 min-w-0">
@@ -203,10 +304,27 @@ export const MobileUploadsSection: React.FC<MobileUploadsProps> = ({
                     </div>
                   </div>
 
-                  {/* Action Menu */}
-                  <button className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                    <MoreVertical className="w-4 h-4 text-gray-400" />
-                  </button>
+                  {/* Action Buttons */}
+                  <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-all duration-200">
+                    <button
+                      onClick={() => handleViewUpload(upload)}
+                      className="p-2 rounded-lg bg-teal-50 hover:bg-teal-100 dark:bg-teal-900/20 dark:hover:bg-teal-900/40 
+                               text-teal-600 dark:text-teal-400 hover:text-teal-700 dark:hover:text-teal-300
+                               transition-all duration-200 hover:scale-105 active:scale-95"
+                      title="View Details"
+                    >
+                      <Eye className="w-4 h-4" />
+                    </button>
+                    <button
+                      onClick={() => handleDownloadUpload(upload)}
+                      className="p-2 rounded-lg bg-blue-50 hover:bg-blue-100 dark:bg-blue-900/20 dark:hover:bg-blue-900/40 
+                               text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300
+                               transition-all duration-200 hover:scale-105 active:scale-95"
+                      title="Download File"
+                    >
+                      <Download className="w-4 h-4" />
+                    </button>
+                  </div>
                 </div>
               </div>
             ))}
@@ -260,6 +378,16 @@ export const MobileUploadsSection: React.FC<MobileUploadsProps> = ({
           )}
         </>
       )}
+
+      {/* Upload View Modal */}
+      <UploadViewModal
+        upload={selectedUpload}
+        isOpen={isModalOpen}
+        onClose={handleCloseModal}
+      />
+      
+      {/* Toast Notifications */}
+      <ToastContainer toasts={toasts} onClose={closeToast} />
     </Card>
   );
 };
