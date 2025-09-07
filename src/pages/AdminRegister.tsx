@@ -49,14 +49,14 @@ const AdminRegister: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center p-6">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 flex items-center justify-center p-6 transition-colors duration-200">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <Logo size="lg" className="justify-center mb-4" />
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2 transition-colors duration-200">
             Create Admin Account
           </h2>
-          <p className="text-gray-600">
+          <p className="text-gray-700 dark:text-gray-200 font-medium transition-colors duration-200">
             Register to access the admin dashboard
           </p>
         </div>
@@ -72,7 +72,7 @@ const AdminRegister: React.FC = () => {
         <div className="text-center mt-6">
           <button
             onClick={() => navigate('/admin/login')}
-            className="text-sm text-teal-600 hover:text-teal-700"
+            className="text-sm text-teal-700 dark:text-teal-300 hover:text-teal-800 dark:hover:text-teal-200 font-medium transition-colors duration-200"
           >
             Already have an account? Sign in
           </button>
@@ -81,7 +81,7 @@ const AdminRegister: React.FC = () => {
         <div className="text-center mt-4">
           <button
             onClick={() => navigate('/')}
-            className="text-sm text-gray-500 hover:text-gray-700"
+            className="text-sm text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-gray-100 font-medium transition-colors duration-200"
           >
             ← Back to homepage
           </button>

@@ -10,14 +10,6 @@ interface NavbarProps {
 const Navbar: React.FC<NavbarProps> = ({ sidebarOpen, setSidebarOpen, onLogout }) => {
   return (
     <>
-      {/* Mobile sidebar backdrop */}
-      {sidebarOpen && (
-        <div 
-          className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
-          onClick={() => setSidebarOpen(false)}
-        />
-      )}
-
       {/* Sidebar Component */}
       <Sidebar 
         sidebarOpen={sidebarOpen}

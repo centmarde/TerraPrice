@@ -9,6 +9,8 @@ export const useFloorplanStore = create<FloorplanState>((set, get) => ({
   fetchSubmissions: async () => {
     set({ isLoading: true });
     try {
+      // Simulate network delay for better skeleton demonstration
+      await new Promise(resolve => setTimeout(resolve, 1000));
       // TODO: Implement actual API call to Supabase
       // This is where we'll fetch from the database
       set({ submissions: [], isLoading: false });
