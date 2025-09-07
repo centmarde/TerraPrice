@@ -3,6 +3,7 @@ import { FileImage, Users, TrendingUp, Clock } from 'lucide-react';
 import { useFloorplanStore } from '../stores/floorplanStore';
 import { useMobileUploadsStore } from '../stores/mobileUploads';
 import { MobileUploadsSection } from '../components/dashboard/MobileUploadsSection';
+import { StatCard } from '../components/ui/StatCard';
 
 const Dashboard: React.FC = () => {
   const { submissions, fetchSubmissions } = useFloorplanStore();
@@ -90,57 +91,37 @@ const Dashboard: React.FC = () => {
 
       {/* Statistics cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
-        {/* Pending Review */}
-        <div className="bg-gray-800 border-2 border-yellow-500 rounded-xl p-4 lg:p-6">
-          <div className="flex items-center gap-2 lg:gap-3">
-            <div className="w-8 h-8 lg:w-10 lg:h-10 bg-yellow-500/20 rounded-lg flex items-center justify-center flex-shrink-0">
-              <Clock className="w-4 h-4 lg:w-5 lg:h-5 text-yellow-400" />
-            </div>
-            <div className="min-w-0">
-              <p className="text-xs lg:text-sm font-medium text-yellow-400">Pending Review</p>
-              <p className="text-2xl lg:text-3xl font-bold text-white">{stats.pending}</p>
-            </div>
-          </div>
-        </div>
-
-        {/* Approved */}
-        <div className="bg-gray-800 border-2 border-green-500 rounded-xl p-4 lg:p-6">
-          <div className="flex items-center gap-2 lg:gap-3">
-            <div className="w-8 h-8 lg:w-10 lg:h-10 bg-green-500/20 rounded-lg flex items-center justify-center flex-shrink-0">
-              <TrendingUp className="w-4 h-4 lg:w-5 lg:h-5 text-green-400" />
-            </div>
-            <div className="min-w-0">
-              <p className="text-xs lg:text-sm font-medium text-green-400">Approved</p>
-              <p className="text-2xl lg:text-3xl font-bold text-white">{stats.approved}</p>
-            </div>
-          </div>
-        </div>
-
-        {/* Denied */}
-        <div className="bg-gray-800 border-2 border-red-500 rounded-xl p-4 lg:p-6">
-          <div className="flex items-center gap-2 lg:gap-3">
-            <div className="w-8 h-8 lg:w-10 lg:h-10 bg-red-500/20 rounded-lg flex items-center justify-center flex-shrink-0">
-              <FileImage className="w-4 h-4 lg:w-5 lg:h-5 text-red-400" />
-            </div>
-            <div className="min-w-0">
-              <p className="text-xs lg:text-sm font-medium text-red-400">Denied</p>
-              <p className="text-2xl lg:text-3xl font-bold text-white">{stats.rejected}</p>
-            </div>
-          </div>
-        </div>
-
-        {/* Total Reviewed */}
-        <div className="bg-gray-800 border-2 border-blue-500 rounded-xl p-4 lg:p-6">
-          <div className="flex items-center gap-2 lg:gap-3">
-            <div className="w-8 h-8 lg:w-10 lg:h-10 bg-blue-500/20 rounded-lg flex items-center justify-center flex-shrink-0">
-              <Users className="w-4 h-4 lg:w-5 lg:h-5 text-blue-400" />
-            </div>
-            <div className="min-w-0">
-              <p className="text-xs lg:text-sm font-medium text-blue-400">Total Reviewed</p>
-              <p className="text-2xl lg:text-3xl font-bold text-white">{stats.total}</p>
-            </div>
-          </div>
-        </div>
+        <StatCard
+          title="Pending Review"
+          value={stats.pending}
+          icon={Clock}
+          color="yellow"
+          delay={0}
+        />
+        
+        <StatCard
+          title="Approved"
+          value={stats.approved}
+          icon={TrendingUp}
+          color="green"
+          delay={200}
+        />
+        
+        <StatCard
+          title="Denied"
+          value={stats.rejected}
+          icon={FileImage}
+          color="red"
+          delay={400}
+        />
+        
+        <StatCard
+          title="Total Reviewed"
+          value={stats.total}
+          icon={Users}
+          color="blue"
+          delay={600}
+        />
       </div>
 
       {/* Enhanced Mobile Uploads Section */}

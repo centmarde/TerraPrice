@@ -42,6 +42,11 @@ body {
   text-overflow: ellipsis;
 }
 
+/* Text glow effect for animations */
+.text-shadow-glow {
+  text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+}
+
 /* Custom scrollbar for dark mode */
 ::-webkit-scrollbar {
   width: 8px;
