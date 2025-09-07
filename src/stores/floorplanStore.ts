@@ -3,7 +3,7 @@ import { FloorplanState, FloorplanSubmission } from '../types';
 
 export const useFloorplanStore = create<FloorplanState>((set, get) => ({
   submissions: [],
-  selectedSubmission: null,
+  selectedSubmission: {} as FloorplanSubmission,
   isLoading: false,
 
   fetchSubmissions: async () => {
@@ -22,7 +22,7 @@ export const useFloorplanStore = create<FloorplanState>((set, get) => ({
 
   selectSubmission: (id: string) => {
     const submission = get().submissions.find(s => s.id === id);
-    set({ selectedSubmission: submission || null });
+    set({ selectedSubmission: submission  });
   },
 
   updateSubmissionStatus: async (id: string, status: FloorplanSubmission['status'], notes?: string) => {

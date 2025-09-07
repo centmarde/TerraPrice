@@ -4,8 +4,9 @@ import { MobileUpload, MobileUploadsState } from '../types';
 
 export const useMobileUploadsStore = create<MobileUploadsState>((set, get) => ({
   uploads: [],
-  selectedUpload: null,
+  selectedUpload: undefined,
   isLoading: false,
+  isDialogOpen: false,
 
   fetchUploads: async () => {
     set({ isLoading: true });
@@ -167,17 +168,31 @@ export const useMobileUploadsStore = create<MobileUploadsState>((set, get) => ({
   selectUpload: (id: number) => {
     const { uploads } = get();
     const upload = uploads.find(u => u.id === id);
-    set({ selectedUpload: upload || null });
+    set({ selectedUpload: upload });
   },
 
-  updateUploadStatus: async (id: number, status: MobileUpload['status']) => {
+  openDialog: (upload: MobileUpload) => {
+    set({ selectedUpload: upload, isDialogOpen: true });
+  },
+
+  closeDialog: () => {
+    set({ isDialogOpen: false, selectedUpload: undefined });
+  },
+
+  updateUploadStatus: async (id: number, status: MobileUpload['status'], comments?: string) => {
     try {
+      const updateData: { status: MobileUpload['status']; updated_at: string; comments?: string } = {
+        status, 
+        updated_at: new Date().toISOString()
+      };
+
+      if (comments !== undefined) {
+        updateData.comments = comments;
+      }
+
       const { error } = await supabase
         .from('mobile_uploads')
-        .update({ 
-          status, 
-          updated_at: new Date().toISOString() 
-        })
+        .update(updateData)
         .eq('id', id);
 
       if (error) {
@@ -188,12 +203,12 @@ export const useMobileUploadsStore = create<MobileUploadsState>((set, get) => ({
       const { uploads, selectedUpload } = get();
       const updatedUploads = uploads.map(upload => 
         upload.id === id 
-          ? { ...upload, status, updated_at: new Date().toISOString() }
+          ? { ...upload, status, updated_at: new Date().toISOString(), ...(comments !== undefined && { comments }) }
           : upload
       );
       
       const updatedSelectedUpload = selectedUpload?.id === id 
-        ? { ...selectedUpload, status, updated_at: new Date().toISOString() }
+        ? { ...selectedUpload, status, updated_at: new Date().toISOString(), ...(comments !== undefined && { comments }) }
         : selectedUpload;
 
       set({ 

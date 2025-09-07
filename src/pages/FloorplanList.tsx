@@ -31,7 +31,7 @@ const FloorplanList: React.FC = () => {
     all: submissions.length,
     pending: submissions.filter(s => s.status === 'pending').length,
     approved: submissions.filter(s => s.status === 'approved').length,
-    rejected: submissions.filter(s => s.status === 'rejected').length,
+    denied: submissions.filter(s => s.status === 'denied').length,
   };
 
   return (
@@ -58,7 +58,7 @@ const FloorplanList: React.FC = () => {
 
           <div className="flex items-center space-x-2">
             <Filter className="w-5 h-5 text-gray-400" />
-            {(['all', 'pending', 'approved', 'rejected'] as const).map((status) => (
+            {(['all', 'pending', 'approved', 'denied'] as const).map((status) => (
               <button
                 key={status}
                 onClick={() => setStatusFilter(status)}
