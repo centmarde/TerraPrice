@@ -9,6 +9,10 @@ export const useMobileUploadsStore = create<MobileUploadsState>((set, get) => ({
 
   fetchUploads: async () => {
     set({ isLoading: true });
+    
+    // Simulate network delay for better skeleton demonstration
+    await new Promise(resolve => setTimeout(resolve, 1200));
+    
     try {
       // Get uploads from mobile_uploads table
       const { data, error } = await supabase

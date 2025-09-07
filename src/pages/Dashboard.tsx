@@ -4,9 +4,10 @@ import { useFloorplanStore } from '../stores/floorplanStore';
 import { useMobileUploadsStore } from '../stores/mobileUploads';
 import { MobileUploadsSection } from '../components/dashboard/MobileUploadsSection';
 import { StatCard } from '../components/ui/StatCard';
+import { StatCardSkeleton } from '../components/ui/Skeleton';
 
 const Dashboard: React.FC = () => {
-  const { submissions, fetchSubmissions } = useFloorplanStore();
+  const { submissions, fetchSubmissions, isLoading: submissionsLoading } = useFloorplanStore();
   const { uploads, isLoading: uploadsLoading, fetchUploads } = useMobileUploadsStore();
 
   useEffect(() => {
@@ -91,37 +92,47 @@ const Dashboard: React.FC = () => {
 
       {/* Statistics cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
-        <StatCard
-          title="Pending Review"
-          value={stats.pending}
-          icon={Clock}
-          color="yellow"
-          delay={0}
-        />
-        
-        <StatCard
-          title="Approved"
-          value={stats.approved}
-          icon={TrendingUp}
-          color="green"
-          delay={200}
-        />
-        
-        <StatCard
-          title="Denied"
-          value={stats.rejected}
-          icon={FileImage}
-          color="red"
-          delay={400}
-        />
-        
-        <StatCard
-          title="Total Reviewed"
-          value={stats.total}
-          icon={Users}
-          color="blue"
-          delay={600}
-        />
+        {submissionsLoading ? (
+          <>
+            {[...Array(4)].map((_, index) => (
+              <StatCardSkeleton key={index} />
+            ))}
+          </>
+        ) : (
+          <>
+            <StatCard
+              title="Pending Review"
+              value={stats.pending}
+              icon={Clock}
+              color="yellow"
+              delay={0}
+            />
+            
+            <StatCard
+              title="Approved"
+              value={stats.approved}
+              icon={TrendingUp}
+              color="green"
+              delay={200}
+            />
+            
+            <StatCard
+              title="Denied"
+              value={stats.rejected}
+              icon={FileImage}
+              color="red"
+              delay={400}
+            />
+            
+            <StatCard
+              title="Total Reviewed"
+              value={stats.total}
+              icon={Users}
+              color="blue"
+              delay={600}
+            />
+          </>
+        )}
       </div>
 
       {/* Enhanced Mobile Uploads Section */}

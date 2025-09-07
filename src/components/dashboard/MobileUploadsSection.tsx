@@ -14,7 +14,7 @@ import {
 } from 'lucide-react';
 import { Card, CardHeader } from '../ui/Card';
 import { Button } from '../ui/Button';
-import { LoadingSpinner } from '../ui/Loader';
+import { UploadListSkeleton } from '../ui/Skeleton';
 import { UploadViewModal } from '../ui/UploadViewModal';
 import { ToastContainer, useToast } from '../ui/Toast';
 import { MobileUpload } from '../../types';
@@ -209,8 +209,8 @@ export const MobileUploadsSection: React.FC<MobileUploadsProps> = ({
       
       {/* Content */}
       {isLoading ? (
-        <div className="flex items-center justify-center py-12">
-          <LoadingSpinner size="lg" text="Loading uploads..." />
+        <div className="p-4">
+          <UploadListSkeleton />
         </div>
       ) : filteredUploads.length === 0 ? (
         <div className="text-center py-12">
