@@ -3,6 +3,7 @@ import { FileText, Calendar, User, HardDrive, Eye, Download } from 'lucide-react
 import { useMobileUploadsStore } from '../../stores/mobileUploads';
 import { Card, CardHeader } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
+import { LoadingBars } from '../../components/ui/Loader';
 import { MobileUpload } from '../../types';
 import DashboardDialog from './dashboard-dialog';
 
@@ -96,8 +97,7 @@ const DashboardTable: React.FC = () => {
       
       {isLoading ? (
         <div className="flex items-center justify-center py-12">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-teal-700"></div>
-          <span className="ml-3 text-gray-600">Loading uploads...</span>
+          <LoadingBars size="lg" text="Loading uploads..." />
         </div>
       ) : uploads.length === 0 ? (
         <div className="text-center py-12">

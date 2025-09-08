@@ -1,12 +1,13 @@
 import React, { useEffect } from 'react';
-import { FileImage, Users, TrendingUp, Clock, Upload } from 'lucide-react';
+import { FileImage, Users, TrendingUp, Clock } from 'lucide-react';
 import { useFloorplanStore } from '../stores/floorplanStore';
 import { useMobileUploadsStore } from '../stores/mobileUploads';
-import { Card, CardHeader } from '../components/ui/Card';
-import DashboardTable from './dashboard/dashboard-table';
+import { MobileUploadsSection } from '../components/dashboard/MobileUploadsSection';
+import { StatCard } from '../components/ui/StatCard';
+import { StatCardSkeleton } from '../components/ui/Skeleton';
 
 const Dashboard: React.FC = () => {
-  const { submissions, fetchSubmissions } = useFloorplanStore();
+  const { submissions, fetchSubmissions, isLoading: submissionsLoading } = useFloorplanStore();
   const { uploads, isLoading: uploadsLoading, fetchUploads } = useMobileUploadsStore();
 
   useEffect(() => {
@@ -22,182 +23,129 @@ const Dashboard: React.FC = () => {
     total: submissions.length
   };
 
-  // Filter uploads from the last 24 hours
-  const oneDayAgo = new Date();
-  oneDayAgo.setDate(oneDayAgo.getDate() - 1);
-  
-  const recentMobileUploads = uploads
-    .filter(upload => {
-      if (!upload.created_at) return false;
-      const uploadDate = new Date(upload.created_at);
-      return uploadDate >= oneDayAgo;
-    })
-    .sort((a, b) => {
-      const dateA = new Date(a.created_at || 0);
-      const dateB = new Date(b.created_at || 0);
-      return dateB.getTime() - dateA.getTime();
-    })
-    .slice(0, 5);
+  // Add some sample uploads with image URLs for testing if no real data exists
+  const sampleUploads = uploads.length === 0 ? [
+    {
+      id: 1,
+      user_id: 'sample-user-1',
+      created_at: new Date().toISOString(),
+      file_name: 'floorplan-sample-1.jpg',
+      file_path: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCA0MCA0MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjQwIiBoZWlnaHQ9IjQwIiBmaWxsPSIjRkZGIiBzdHJva2U9IiNFNUU3RUIiLz4KPHN2ZyB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiB4PSIxMCIgeT0iMTAiPgo8cGF0aCBkPSJNMjEgMTUtMy4wODYtMy4wODZhMiAyIDAgMCAwLTIuODI4IDBMNiAyMSIgc3Ryb2tlPSIjMzc0MTUxIiBzdHJva2Utd2lkdGg9IjIiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8Y2lyY2xlIGN4PSI5IiBjeT0iOSIgcj0iMiIgc3Ryb2tlPSIjMzc0MTUxIiBzdHJva2Utd2lkdGg9IjIiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8cmVjdCB3aWR0aD0iMTgiIGhlaWdodD0iMTgiIHg9IjMiIHk9IjMiIHJ4PSIyIiByeT0iMiIgc3Ryb2tlPSIjMzc0MTUxIiBzdHJva2Utd2lkdGg9IjIiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8L3N2Zz4KPC9zdmc+',
+      file_size: 2048000,
+      status: 'uploaded' as const,
+      updated_at: new Date().toISOString(),
+      userDetails: {
+        id: 'sample-user-1',
+        email: 'john.doe@example.com',
+        fullName: 'John Doe',
+        phoneNumber: '+1234567890'
+      }
+    },
+    {
+      id: 2,
+      user_id: 'sample-user-2',
+      created_at: new Date(Date.now() - 86400000).toISOString(),
+      file_name: 'house-blueprint.png',
+      file_path: 'https://picsum.photos/400/300?random=1',
+      file_size: 1536000,
+      status: 'completed' as const,
+      updated_at: new Date().toISOString(),
+      userDetails: {
+        id: 'sample-user-2',
+        email: 'jane.smith@example.com',
+        fullName: 'Jane Smith',
+        phoneNumber: '+0987654321'
+      }
+    },
+    {
+      id: 3,
+      user_id: 'sample-user-3',
+      created_at: new Date(Date.now() - 172800000).toISOString(),
+      file_name: 'architectural-plan.jpg',
+      file_path: 'https://picsum.photos/400/300?random=2',
+      file_size: 3072000,
+      status: 'processing' as const,
+      updated_at: new Date().toISOString(),
+      userDetails: {
+        id: 'sample-user-3',
+        email: 'mike.wilson@example.com',
+        fullName: 'Mike Wilson'
+      }
+    }
+  ] : uploads;
 
-  const formatDate = (dateString: string | null) => {
-    if (!dateString) return 'N/A';
-    return new Date(dateString).toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
-  };
+  console.log('Dashboard Debug:', {
+    realUploadsCount: uploads.length,
+    sampleUploadsCount: sampleUploads.length,
+    usingSampleData: uploads.length === 0,
+    sampleUploads: sampleUploads
+  });
 
   return (
-    <div>
-      <div  className="space-y-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">Dashboard</h1>
-        <p className="text-gray-600">
+
+    <div className="space-y-6 lg:space-y-8">
+      <div>
+        <h1 className="text-2xl lg:text-3xl font-bold text-gray-900 dark:text-white mb-2 transition-colors duration-200">Dashboard</h1>
+        <p className="text-sm lg:text-base text-gray-600 dark:text-gray-300 transition-colors duration-200">
+
           Overview of floorplan submissions and review status
         </p>
       </div>
 
       {/* Statistics cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 py-8">
-        <Card>
-          <div className="flex items-center">
-            <div className="flex-shrink-0">
-              <div className="w-8 h-8 bg-yellow-100 rounded-lg flex items-center justify-center">
-                <Clock className="w-5 h-5 text-yellow-600" />
-              </div>
-            </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Pending Review</p>
-              <p className="text-2xl font-bold text-gray-900">{stats.pending}</p>
-            </div>
-          </div>
-        </Card>
 
-        <Card>
-          <div className="flex items-center">
-            <div className="flex-shrink-0">
-              <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
-                <TrendingUp className="w-5 h-5 text-green-600" />
-              </div>
-            </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Approved</p>
-              <p className="text-2xl font-bold text-gray-900">{stats.approved}</p>
-            </div>
-          </div>
-        </Card>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
+        {submissionsLoading ? (
+          <>
+            {[...Array(4)].map((_, index) => (
+              <StatCardSkeleton key={index} />
 
-        <Card>
-          <div className="flex items-center">
-            <div className="flex-shrink-0">
-              <div className="w-8 h-8 bg-red-100 rounded-lg flex items-center justify-center">
-                <FileImage className="w-5 h-5 text-red-600" />
-              </div>
-            </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Denied</p>
-              <p className="text-2xl font-bold text-gray-900">{stats.denied}</p>
-            </div>
-          </div>
-        </Card>
-
-        <Card>
-          <div className="flex items-center">
-            <div className="flex-shrink-0">
-              <div className="w-8 h-8 bg-teal-100 rounded-lg flex items-center justify-center">
-                <Users className="w-5 h-5 text-teal-600" />
-              </div>
-            </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Total</p>
-              <p className="text-2xl font-bold text-gray-900">{stats.total}</p>
-            </div>
-          </div>
-        </Card>
-      </div>
-
-      {/* Recent Mobile Uploads */}
-      <Card>
-        <CardHeader 
-          title="Recent Mobile Uploads"
-          subtitle="Mobile uploads from the last 24 hours"
-          action={
-            <div className="flex items-center space-x-2">
-              <span className="text-sm text-gray-500">
-                {recentMobileUploads.length} recent
-              </span>
-              <Upload className="w-4 h-4 text-gray-400" />
-            </div>
-          }
-        />
-        
-        {uploadsLoading ? (
-          <div className="flex items-center justify-center py-8">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-teal-700"></div>
-            <span className="ml-3 text-gray-600">Loading uploads...</span>
-          </div>
-        ) : recentMobileUploads.length === 0 ? (
-          <div className="text-center py-8">
-            <Upload className="w-12 h-12 text-gray-400 mx-auto mb-3" />
-            <p className="text-gray-500 mb-2">No recent uploads</p>
-            <p className="text-sm text-gray-400">
-              Mobile uploads from the last 24 hours will appear here
-            </p>
-          </div>
-        ) : (
-          <div className="space-y-4">
-            {recentMobileUploads.map((upload) => (
-              <div 
-                key={upload.id}
-                className="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
-              >
-                <div className="flex items-center space-x-4">
-                  <div className="w-12 h-12 bg-gray-200 rounded-lg flex items-center justify-center">
-                    <FileImage className="w-6 h-6 text-gray-500" />
-                  </div>
-                  <div>
-                    <p className="font-medium text-gray-900">
-                      {upload.file_name || 'Unknown File'}
-                    </p>
-                    <p className="text-sm text-gray-600">
-                      {upload.file_size ? `${Math.round(upload.file_size / 1024)} KB` : 'Size unknown'} • 
-                      {formatDate(upload.created_at)}
-                    </p>
-                  </div>
-                </div>
-                
-                <div className="flex items-center space-x-3">
-                  <span 
-                    className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                      upload.status === 'approved' ? 'bg-green-100 text-green-800' :
-                      upload.status === 'denied' ? 'bg-red-100 text-red-800' :
-                      upload.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
-                      upload.status === 'uploading' ? 'bg-blue-100 text-blue-800' :
-                      upload.status === 'uploaded' ? 'bg-emerald-100 text-emerald-800' :
-                      upload.status === 'processing' ? 'bg-purple-100 text-purple-800' :
-                      upload.status === 'completed' ? 'bg-teal-100 text-teal-800' :
-                      upload.status === 'error' ? 'bg-red-100 text-red-800' :
-                      'bg-gray-100 text-gray-800'
-                    }`}
-                  >
-                    {upload.status || 'unknown'}
-                  </span>
-                  <div className="text-sm text-gray-500">
-                    User: {upload.userDetails?.fullName || upload.userDetails?.email || 'Unknown'}
-                  </div>
-                </div>
-              </div>
             ))}
-          </div>
+          </>
+        ) : (
+          <>
+            <StatCard
+              title="Pending Review"
+              value={stats.pending}
+              icon={Clock}
+              color="yellow"
+              delay={0}
+            />
+            
+            <StatCard
+              title="Approved"
+              value={stats.approved}
+              icon={TrendingUp}
+              color="green"
+              delay={200}
+            />
+            
+            <StatCard
+              title="Denied"
+              value={stats.rejected}
+              icon={FileImage}
+              color="red"
+              delay={400}
+            />
+            
+            <StatCard
+              title="Total Reviewed"
+              value={stats.total}
+              icon={Users}
+              color="blue"
+              delay={600}
+            />
+          </>
         )}
-      </Card>
-
-      {/* Mobile Uploads Table */}
-      <div className="mt-8">
-        <DashboardTable />
       </div>
-      
+
+
+      {/* Enhanced Mobile Uploads Section */}
+      <MobileUploadsSection 
+        uploads={sampleUploads} 
+        isLoading={uploadsLoading}
+      />
+
     </div>
   );
 };
