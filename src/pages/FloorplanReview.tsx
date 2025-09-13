@@ -7,6 +7,7 @@ import { ApprovalControls } from '../components/floorplan/ApprovalControls';
 import { Card, CardHeader } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { StatusBadge } from '../components/ui/StatusBadge';
+import { FloorplanSubmission } from '../types';
 
 const FloorplanReview: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -20,7 +21,7 @@ const FloorplanReview: React.FC = () => {
     }
   }, [id, selectSubmission]);
 
-  const handleStatusUpdate = async (status: 'approved' | 'rejected', notes?: string) => {
+  const handleStatusUpdate = async (status: FloorplanSubmission['status'], notes?: string) => {
     if (!selectedSubmission) return;
     
     setIsUpdating(true);

@@ -27,7 +27,7 @@ const Dashboard: React.FC = () => {
   const stats = {
     pending: submissions.filter(s => s.status === 'pending').length,
     approved: submissions.filter(s => s.status === 'approved').length,
-    rejected: submissions.filter(s => s.status === 'rejected').length,
+    denied: submissions.filter(s => s.status === 'denied').length,
     total: submissions.length
   };
 
@@ -39,20 +39,24 @@ const Dashboard: React.FC = () => {
   });
 
   return (
+
     <div className="space-y-6 lg:space-y-8">
       <div>
         <h1 className="text-2xl lg:text-3xl font-bold text-gray-900 dark:text-white mb-2 transition-colors duration-200">Dashboard</h1>
         <p className="text-sm lg:text-base text-gray-600 dark:text-gray-300 transition-colors duration-200">
+
           Overview of floorplan submissions and review status
         </p>
       </div>
 
       {/* Statistics cards */}
+
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
         {submissionsLoading ? (
           <>
             {[...Array(4)].map((_, index) => (
               <StatCardSkeleton key={index} />
+
             ))}
           </>
         ) : (
@@ -92,11 +96,13 @@ const Dashboard: React.FC = () => {
         )}
       </div>
 
+
       {/* Enhanced Mobile Uploads Section */}
       <MobileUploadsSection 
         uploads={uploads} 
         isLoading={uploadsLoading}
       />
+
     </div>
   );
 };

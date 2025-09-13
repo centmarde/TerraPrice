@@ -5,9 +5,18 @@ import { Card, CardHeader } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
 import { LoadingBars } from '../../components/ui/Loader';
 import { MobileUpload } from '../../types';
+import DashboardDialog from './dashboard-dialog';
 
 const DashboardTable: React.FC = () => {
-  const { uploads, isLoading, fetchUploads, selectUpload } = useMobileUploadsStore();
+  const { 
+    uploads, 
+    isLoading, 
+    fetchUploads, 
+    openDialog, 
+    closeDialog, 
+    isDialogOpen, 
+    selectedUpload 
+  } = useMobileUploadsStore();
 
   useEffect(() => {
     fetchUploads();
@@ -24,7 +33,7 @@ const DashboardTable: React.FC = () => {
     });
   };
 
-  const formatFileSize = (bytes: number | null) => {
+  const formatFileSize = (bytes?: number) => {
     if (!bytes) return 'N/A';
     const sizes = ['Bytes', 'KB', 'MB', 'GB'];
     const i = Math.floor(Math.log(bytes) / Math.log(1024));
@@ -33,14 +42,20 @@ const DashboardTable: React.FC = () => {
 
   const getStatusColor = (status: string) => {
     switch (status) {
+      case 'approved':
+        return 'bg-green-100 text-green-800';
+      case 'denied':
+        return 'bg-red-100 text-red-800';
+      case 'pending':
+        return 'bg-yellow-100 text-yellow-800';
       case 'uploading':
         return 'bg-blue-100 text-blue-800';
       case 'uploaded':
-        return 'bg-green-100 text-green-800';
-      case 'processing':
-        return 'bg-yellow-100 text-yellow-800';
-      case 'completed':
         return 'bg-emerald-100 text-emerald-800';
+      case 'processing':
+        return 'bg-purple-100 text-purple-800';
+      case 'completed':
+        return 'bg-teal-100 text-teal-800';
       case 'error':
         return 'bg-red-100 text-red-800';
       default:
@@ -49,9 +64,7 @@ const DashboardTable: React.FC = () => {
   };
 
   const handleViewUpload = (upload: MobileUpload) => {
-    selectUpload(upload.id);
-    // Here you could navigate to a detailed view or open a modal
-    console.log('Viewing upload:', upload);
+    openDialog(upload);
   };
 
   const handleDownloadUpload = (upload: MobileUpload) => {
@@ -60,18 +73,27 @@ const DashboardTable: React.FC = () => {
   };
 
   return (
-    <Card>
-      <CardHeader 
-        title="Mobile Uploads"
-        subtitle="Recent file uploads from mobile app"
-        action={
-          <div className="flex items-center space-x-2">
-            <span className="text-sm text-gray-500">
-              Total: {uploads.length}
-            </span>
-          </div>
-        }
-      />
+    <>
+    {/* Dialog */}
+      {isDialogOpen && selectedUpload && (
+        <DashboardDialog
+          isOpen={isDialogOpen}
+          upload={selectedUpload}
+          onClose={closeDialog}
+        />
+      )}
+      <Card >
+        <CardHeader 
+          title="Mobile Uploads"
+          subtitle="Recent file uploads from mobile app"
+          action={
+            <div className="flex items-center space-x-2">
+              <span className="text-sm text-gray-500">
+                Total: {uploads.length}
+              </span>
+            </div>
+          }
+        />
       
       {isLoading ? (
         <div className="flex items-center justify-center py-12">
@@ -185,7 +207,10 @@ const DashboardTable: React.FC = () => {
           </table>
         </div>
       )}
-    </Card>
+      </Card>
+
+      
+    </>
   );
 };
 
