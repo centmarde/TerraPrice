@@ -49,12 +49,12 @@ const Sidebar: React.FC<SidebarProps> = ({ sidebarOpen, setSidebarOpen, onLogout
         <div className="flex flex-col h-full">
           {/* Logo and close button */}
           <div className="flex items-center justify-between p-4 lg:p-6 border-b border-gray-200 dark:border-gray-700 min-h-[64px]">
-            <div className="flex items-center">
-              <Logo size="sm" showText={true} />
+            <div className="flex items-center flex-shrink-0 min-w-0">
+              <Logo size="sm" showText={true} className="max-w-full" />
             </div>
             <button
               onClick={() => setSidebarOpen(false)}
-              className="lg:hidden p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-300 transition-colors duration-200 touch-manipulation"
+              className="lg:hidden p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-300 transition-colors duration-200 touch-manipulation flex-shrink-0"
               aria-label="Close sidebar"
             >
               <X className="w-5 h-5" />
