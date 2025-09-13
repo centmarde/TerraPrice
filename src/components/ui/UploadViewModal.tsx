@@ -28,14 +28,31 @@ export const UploadViewModal: React.FC<UploadViewModalProps> = ({
     
     setIsUpdating(true);
     try {
+      console.log('🔄 Starting status update:', { uploadId: upload.id, newStatus });
       await updateUploadStatus(upload.id, newStatus);
+      console.log('✅ Status update successful');
+      
       // Close modal after successful update
       setTimeout(() => {
         onClose();
       }, 1000);
     } catch (error) {
-      console.error('Failed to update upload status:', error);
-      alert('Failed to update status. Please try again.');
+      console.error('❌ Failed to update upload status:', error);
+      
+      // More specific error messages
+      let errorMessage = 'Failed to update status. Please try again.';
+      
+      if (error instanceof Error) {
+        if (error.message.includes('permission')) {
+          errorMessage = 'Permission denied. Please check your admin access.';
+        } else if (error.message.includes('network')) {
+          errorMessage = 'Network error. Please check your connection.';
+        } else if (error.message.includes('timeout')) {
+          errorMessage = 'Request timed out. Please try again.';
+        }
+      }
+      
+      alert(errorMessage);
     } finally {
       setIsUpdating(false);
     }

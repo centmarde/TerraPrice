@@ -7,7 +7,7 @@ import { StatCard } from '../components/ui/StatCard';
 import { StatCardSkeleton } from '../components/ui/Skeleton';
 
 const Dashboard: React.FC = () => {
-  const { submissions, fetchSubmissions, isLoading: submissionsLoading } = useFloorplanStore();
+  const { fetchSubmissions, isLoading: submissionsLoading } = useFloorplanStore();
   const { uploads, isLoading: uploadsLoading, fetchUploads, subscribeToUploads, unsubscribeFromUploads } = useMobileUploadsStore();
 
   useEffect(() => {
@@ -23,26 +23,32 @@ const Dashboard: React.FC = () => {
     };
   }, [fetchSubmissions, fetchUploads, subscribeToUploads, unsubscribeFromUploads]);
 
-  // Calculate statistics (will work with real data when connected to Supabase)
+  // Calculate statistics from mobile uploads (the actual data we're working with)
   const stats = {
-    pending: submissions.filter(s => s.status === 'pending').length,
-    approved: submissions.filter(s => s.status === 'approved').length,
-    denied: submissions.filter(s => s.status === 'denied').length,
-    total: submissions.length
+    pending: uploads.filter(u => u.status !== 'approved' && u.status !== 'denied').length,
+    approved: uploads.filter(u => u.status === 'approved').length,
+    denied: uploads.filter(u => u.status === 'denied').length,
+    total: uploads.filter(u => u.status === 'approved' || u.status === 'denied').length
   };
 
   console.log('Dashboard Debug:', {
     realUploadsCount: uploads.length,
-    realSubmissionsCount: submissions.length,
+    uploadsStats: stats,
+    allStatuses: uploads.map(u => u.status),
+    statusBreakdown: {
+      approved: uploads.filter(u => u.status === 'approved').length,
+      denied: uploads.filter(u => u.status === 'denied').length,
+      other: uploads.filter(u => u.status !== 'approved' && u.status !== 'denied').length
+    },
     isLoadingUploads: uploadsLoading,
     isLoadingSubmissions: submissionsLoading
   });
 
   return (
 
-    <div className="space-y-6 lg:space-y-8">
-      <div>
-        <h1 className="text-2xl lg:text-3xl font-bold text-gray-900 dark:text-white mb-2 transition-colors duration-200">Dashboard</h1>
+    <div className="space-y-4 sm:space-y-6 lg:space-y-8">
+      <div className="px-1">
+        <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 dark:text-white mb-2 transition-colors duration-200">Dashboard</h1>
         <p className="text-sm lg:text-base text-gray-600 dark:text-gray-300 transition-colors duration-200">
 
           Overview of floorplan submissions and review status
@@ -51,8 +57,8 @@ const Dashboard: React.FC = () => {
 
       {/* Statistics cards */}
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
-        {submissionsLoading ? (
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-6">
+        {uploadsLoading ? (
           <>
             {[...Array(4)].map((_, index) => (
               <StatCardSkeleton key={index} />
@@ -79,7 +85,7 @@ const Dashboard: React.FC = () => {
             
             <StatCard
               title="Denied"
-              value={stats.rejected}
+              value={stats.denied}
               icon={FileImage}
               color="red"
               delay={400}
@@ -98,10 +104,12 @@ const Dashboard: React.FC = () => {
 
 
       {/* Enhanced Mobile Uploads Section */}
-      <MobileUploadsSection 
-        uploads={uploads} 
-        isLoading={uploadsLoading}
-      />
+      <div className="w-full">
+        <MobileUploadsSection 
+          uploads={uploads} 
+          isLoading={uploadsLoading}
+        />
+      </div>
 
     </div>
   );

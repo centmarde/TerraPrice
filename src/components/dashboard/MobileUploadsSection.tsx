@@ -9,7 +9,8 @@ import {
   Calendar,
   User,
   Eye,
-  Download
+  Download,
+  ExternalLink
 } from 'lucide-react';
 import { Card, CardHeader } from '../ui/Card';
 import { Button } from '../ui/Button';
@@ -22,17 +23,13 @@ import { downloadFile, getSupabaseFileUrl } from '../../utils/fileUtils';
 interface MobileUploadsProps {
   uploads: MobileUpload[];
   isLoading: boolean;
-  onApprove?: (uploadId: number | string) => Promise<void>;
-  onDeny?: (uploadId: number | string) => Promise<void>;
 }
 
 const ITEMS_PER_PAGE = 5;
 
 export const MobileUploadsSection: React.FC<MobileUploadsProps> = ({ 
   uploads, 
-  isLoading,
-  onApprove,
-  onDeny
+  isLoading 
 }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const [statusFilter, setStatusFilter] = useState<string>('all');
@@ -50,15 +47,7 @@ export const MobileUploadsSection: React.FC<MobileUploadsProps> = ({
       (upload.userDetails?.fullName?.toLowerCase().includes(searchTerm.toLowerCase())) ||
       (upload.userDetails?.email?.toLowerCase().includes(searchTerm.toLowerCase()));
     
-    // Treat any upload that is not explicitly approved/denied as 'pending' in the filter
-    let matchesStatus = false;
-    if (statusFilter === 'all') {
-      matchesStatus = true;
-    } else if (statusFilter === 'pending') {
-      matchesStatus = upload.status !== 'approved' && upload.status !== 'denied';
-    } else {
-      matchesStatus = upload.status === statusFilter;
-    }
+    const matchesStatus = statusFilter === 'all' || upload.status === statusFilter;
     
     return matchesSearch && matchesStatus;
   });
@@ -346,46 +335,46 @@ export const MobileUploadsSection: React.FC<MobileUploadsProps> = ({
 
           {/* Pagination */}
           {totalPages > 1 && (
-            <div className="flex items-center justify-between mt-6 pt-4 border-t border-gray-200 dark:border-gray-600">
-              <p className="text-sm text-gray-500 dark:text-gray-400">
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-3 mt-6 pt-4 border-t border-gray-200 dark:border-gray-600">
+              <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 text-center sm:text-left w-full sm:w-auto">
                 Showing {startIndex + 1} to {Math.min(startIndex + ITEMS_PER_PAGE, filteredUploads.length)} of {filteredUploads.length} uploads
               </p>
-              
-              <div className="flex items-center space-x-2">
+              <div className="flex flex-wrap items-center justify-center gap-1 sm:gap-2 w-full sm:w-auto">
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
                   disabled={currentPage === 1}
                   icon={ChevronLeft}
+                  className="min-w-[36px] min-h-[36px] px-2 sm:px-3"
                 >
-                  Previous
+                  <span className="hidden sm:inline">Previous</span>
                 </Button>
-                
-                <div className="flex items-center space-x-1">
+                <div className="flex items-center gap-1">
                   {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNum) => (
                     <button
                       key={pageNum}
                       onClick={() => setCurrentPage(pageNum)}
-                      className={`w-8 h-8 rounded-lg text-sm font-medium transition-all duration-300 transform hover:scale-110 active:scale-95 ${
+                      className={`w-8 h-8 sm:w-9 sm:h-9 rounded-lg text-xs sm:text-sm font-medium transition-all duration-200 touch-manipulation focus:outline-none focus:ring-2 focus:ring-teal-400 dark:focus:ring-teal-700 ${
                         pageNum === currentPage
                           ? 'bg-teal-700 text-white dark:bg-teal-600 shadow-lg shadow-teal-500/25'
                           : 'text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-gray-200'
                       }`}
+                      aria-current={pageNum === currentPage ? 'page' : undefined}
                     >
                       {pageNum}
                     </button>
                   ))}
                 </div>
-                
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
                   disabled={currentPage === totalPages}
                   icon={ChevronRight}
+                  className="min-w-[36px] min-h-[36px] px-2 sm:px-3"
                 >
-                  Next
+                  <span className="hidden sm:inline">Next</span>
                 </Button>
               </div>
             </div>
@@ -398,8 +387,6 @@ export const MobileUploadsSection: React.FC<MobileUploadsProps> = ({
         upload={selectedUpload}
         isOpen={isModalOpen}
         onClose={handleCloseModal}
-        onApprove={onApprove}
-        onDeny={onDeny}
       />
       
       {/* Toast Notifications */}

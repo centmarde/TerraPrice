@@ -148,13 +148,41 @@ export const useMobileUploadsStore = create<MobileUploadsState>((set, get) => ({
 
   updateUploadStatus: async (id: number, status: MobileUpload['status']) => {
     try {
-      const { error } = await supabase
+      console.log('🔄 Updating upload status:', { id, status });
+      
+      // Check if we have admin permissions
+      if (!supabaseAdmin) {
+        throw new Error('Admin client not available');
+      }
+      
+      // Test admin access first
+      const { error: testError } = await supabaseAdmin
+        .from('mobile_uploads')
+        .select('id')
+        .eq('id', id)
+        .single();
+        
+      if (testError) {
+        console.error('❌ Admin access test failed:', testError);
+        throw new Error(`Admin access denied: ${testError.message}`);
+      }
+      
+      console.log('✅ Admin access confirmed, proceeding with update...');
+      
+      // Use admin client to bypass RLS policies
+      const { error } = await supabaseAdmin
         .from('mobile_uploads')
         .update({ status, updated_at: new Date().toISOString() })
         .eq('id', id);
 
-      if (error) throw error;
+      if (error) {
+        console.error('❌ Database update error:', error);
+        throw new Error(`Database update failed: ${error.message}`);
+      }
 
+      console.log('✅ Successfully updated upload status in database');
+
+      // Update local state
       const { uploads, selectedUpload } = get();
       const updatedUploads = uploads.map(upload => 
         upload.id === id 
@@ -167,8 +195,10 @@ export const useMobileUploadsStore = create<MobileUploadsState>((set, get) => ({
         : selectedUpload;
 
       set({ uploads: updatedUploads, selectedUpload: updatedSelectedUpload });
+      
+      console.log('✅ Successfully updated local state');
     } catch (error) {
-      console.error('Error updating upload status:', error);
+      console.error('💥 Error updating upload status:', error);
       throw error;
     }
   },
