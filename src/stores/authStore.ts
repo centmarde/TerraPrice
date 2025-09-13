@@ -102,6 +102,7 @@ export const useAuthStore = create<AuthState>((set) => ({
   },
 
   checkAuth: async () => {
+    set({ isLoading: true });
     try {
       const { data: { session } } = await supabase.auth.getSession();
       
@@ -113,13 +114,13 @@ export const useAuthStore = create<AuthState>((set) => ({
           role: session.user.user_metadata?.role || 'admin'
         };
         
-        set({ user: adminUser, isAuthenticated: true });
+        set({ user: adminUser, isAuthenticated: true, isLoading: false });
       } else {
-        set({ user: null, isAuthenticated: false });
+        set({ user: null, isAuthenticated: false, isLoading: false });
       }
     } catch (error) {
       console.error('Error checking auth:', error);
-      set({ user: null, isAuthenticated: false });
+      set({ user: null, isAuthenticated: false, isLoading: false });
     }
   },
 }));

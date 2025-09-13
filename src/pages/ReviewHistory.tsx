@@ -2,8 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { 
   History as HistoryIcon,
   FileImage, 
-  Calendar,
-  User,
   CheckCircle,
   XCircle,
   Eye,
@@ -13,7 +11,8 @@ import {
   ChevronRight
 } from 'lucide-react';
 import { useFloorplanStore } from '../stores/floorplanStore';
-import { Card, CardHeader } from '../components/ui/Card';
+import { FloorplanSubmission } from '../types';
+import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { LoadingDots } from '../components/ui/Loader';
 
@@ -24,8 +23,11 @@ const ReviewHistory: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [searchTerm, setSearchTerm] = useState('');
+  const [selectedSubmission, setSelectedSubmission] = useState<FloorplanSubmission | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   useEffect(() => {
+    console.log('ReviewHistory: Fetching submissions...');
     fetchSubmissions();
   }, [fetchSubmissions]);
 
@@ -289,6 +291,7 @@ const ReviewHistory: React.FC = () => {
                       variant="outline"
                       size="sm"
                       icon={Eye}
+                      onClick={() => { setSelectedSubmission(submission); setIsModalOpen(true); }}
                       className="w-full opacity-0 group-hover:opacity-100 transition-opacity duration-200"
                     >
                       View Details
@@ -347,6 +350,68 @@ const ReviewHistory: React.FC = () => {
           </>
         )}
       </Card>
+        {/* Details Modal */}
+        {isModalOpen && selectedSubmission && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+              <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
+                <div>
+                  <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Review Details</h2>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">Reviewed submission details</p>
+                </div>
+                <button onClick={() => { setIsModalOpen(false); setSelectedSubmission(null); }} className="text-gray-500 hover:text-gray-700 dark:hover:text-gray-300">Close</button>
+              </div>
+
+              <div className="p-6 space-y-6">
+                <div className="flex items-center gap-4">
+                  <div className="w-36 h-28 bg-gray-100 dark:bg-gray-700 rounded-lg overflow-hidden flex items-center justify-center">
+                    {selectedSubmission.imageUrl ? (
+                      // imageUrl may be a full URL
+                      <img src={selectedSubmission.imageUrl} alt="submission" className="w-full h-full object-contain" />
+                    ) : (
+                      <FileImage className="w-8 h-8 text-teal-600" />
+                    )}
+                  </div>
+                  <div className="flex-1">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm text-gray-500">User</p>
+                        <p className="font-medium text-gray-900 dark:text-white">{selectedSubmission.userDetails?.fullName || selectedSubmission.userDetails?.email || 'Unknown'}</p>
+                      </div>
+                      <div>
+                        <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(selectedSubmission.status === 'approved' ? 'approved' : 'rejected')}`}>
+                          {selectedSubmission.status === 'approved' ? 'Approved' : 'Denied'}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm text-gray-600 dark:text-gray-300">
+                      <div>
+                        <p className="text-xs text-gray-500">Estimated Cost</p>
+                        <p className="font-semibold text-gray-900 dark:text-white">{selectedSubmission.estimatedCost ? selectedSubmission.estimatedCost.toLocaleString('en-US', { style: 'currency', currency: 'USD' }) : 'N/A'}</p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-gray-500">Reviewed</p>
+                        <p className="font-semibold text-gray-900 dark:text-white">{selectedSubmission.reviewedAt ? formatDate(selectedSubmission.reviewedAt) : 'Unknown'}</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {selectedSubmission.adminNotes && (
+                  <div className="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                    <p className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Admin Notes:</p>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">{selectedSubmission.adminNotes}</p>
+                  </div>
+                )}
+              </div>
+
+              <div className="flex items-center justify-end gap-3 p-6 border-t border-gray-200 dark:border-gray-700">
+                <button onClick={() => { setIsModalOpen(false); setSelectedSubmission(null); }} className="px-4 py-2 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200">Close</button>
+              </div>
+            </div>
+          </div>
+        )}
     </div>
   );
 };

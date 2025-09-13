@@ -9,8 +9,7 @@ import {
   Calendar,
   User,
   Eye,
-  Download,
-  ExternalLink
+  Download
 } from 'lucide-react';
 import { Card, CardHeader } from '../ui/Card';
 import { Button } from '../ui/Button';
@@ -23,13 +22,17 @@ import { downloadFile, getSupabaseFileUrl } from '../../utils/fileUtils';
 interface MobileUploadsProps {
   uploads: MobileUpload[];
   isLoading: boolean;
+  onApprove?: (uploadId: number | string) => Promise<void>;
+  onDeny?: (uploadId: number | string) => Promise<void>;
 }
 
 const ITEMS_PER_PAGE = 5;
 
 export const MobileUploadsSection: React.FC<MobileUploadsProps> = ({ 
   uploads, 
-  isLoading 
+  isLoading,
+  onApprove,
+  onDeny
 }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const [statusFilter, setStatusFilter] = useState<string>('all');
@@ -47,7 +50,15 @@ export const MobileUploadsSection: React.FC<MobileUploadsProps> = ({
       (upload.userDetails?.fullName?.toLowerCase().includes(searchTerm.toLowerCase())) ||
       (upload.userDetails?.email?.toLowerCase().includes(searchTerm.toLowerCase()));
     
-    const matchesStatus = statusFilter === 'all' || upload.status === statusFilter;
+    // Treat any upload that is not explicitly approved/denied as 'pending' in the filter
+    let matchesStatus = false;
+    if (statusFilter === 'all') {
+      matchesStatus = true;
+    } else if (statusFilter === 'pending') {
+      matchesStatus = upload.status !== 'approved' && upload.status !== 'denied';
+    } else {
+      matchesStatus = upload.status === statusFilter;
+    }
     
     return matchesSearch && matchesStatus;
   });
@@ -387,6 +398,8 @@ export const MobileUploadsSection: React.FC<MobileUploadsProps> = ({
         upload={selectedUpload}
         isOpen={isModalOpen}
         onClose={handleCloseModal}
+        onApprove={onApprove}
+        onDeny={onDeny}
       />
       
       {/* Toast Notifications */}

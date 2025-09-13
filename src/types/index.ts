@@ -7,7 +7,7 @@ export interface FloorplanSubmission {
   submittedAt: Date;
   reviewedAt?: Date;
   adminNotes?: string;
-  userDetails: UserInfo;
+  userDetails?: UserInfo | null;
   squareFootage?: number;
   location?: string;
 }
@@ -44,7 +44,7 @@ export interface MobileUpload {
   file_name: string;
   file_path: string;
   file_size: number | null;
-  status: 'uploading' | 'uploaded' | 'processing' | 'completed' | 'error';
+  status: 'uploading' | 'uploaded' | 'processing' | 'pending' | 'approved' | 'denied' | 'completed' | 'error';
   updated_at: string | null;
 }
 
@@ -52,11 +52,14 @@ export interface MobileUploadsState {
   uploads: MobileUpload[];
   selectedUpload: MobileUpload | null;
   isLoading: boolean;
+  subscription: any;
   fetchUploads: () => Promise<void>;
   fetchUploadsByUserId: (userId: string) => Promise<void>;
   fetchUploadsByStatus: (status: MobileUpload['status']) => Promise<void>;
   selectUpload: (id: number) => void;
   updateUploadStatus: (id: number, status: MobileUpload['status']) => Promise<void>;
+  subscribeToUploads: () => void;
+  unsubscribeFromUploads: () => void;
 }
 
 export interface FloorplanState {

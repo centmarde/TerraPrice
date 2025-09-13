@@ -1,10 +1,11 @@
-import React from 'react';
-import { X, FileImage, Calendar, User, HardDrive, MapPin, Clock } from 'lucide-react';
+import React, { useState } from 'react';
+import { X, FileImage, Calendar, User, HardDrive, MapPin, Clock, Check, XIcon, AlertTriangle } from 'lucide-react';
 import { Card } from '../ui/Card';
 import { Button } from '../ui/Button';
 import { MobileUpload } from '../../types';
 import { previewFile, getSupabaseFileUrl, listSupabaseBuckets } from '../../utils/fileUtils';
 import { supabase } from '../../lib/supabase';
+import { useMobileUploadsStore } from '../../stores/mobileUploads';
 
 interface UploadViewModalProps {
   upload: MobileUpload | null;
@@ -17,7 +18,28 @@ export const UploadViewModal: React.FC<UploadViewModalProps> = ({
   isOpen, 
   onClose 
 }) => {
+  const [isUpdating, setIsUpdating] = useState(false);
+  const { updateUploadStatus } = useMobileUploadsStore();
+
   if (!isOpen || !upload) return null;
+
+  const handleStatusUpdate = async (newStatus: MobileUpload['status']) => {
+    if (!upload || isUpdating) return;
+    
+    setIsUpdating(true);
+    try {
+      await updateUploadStatus(upload.id, newStatus);
+      // Close modal after successful update
+      setTimeout(() => {
+        onClose();
+      }, 1000);
+    } catch (error) {
+      console.error('Failed to update upload status:', error);
+      alert('Failed to update status. Please try again.');
+    } finally {
+      setIsUpdating(false);
+    }
+  };
 
   const formatDate = (dateString: string | null) => {
     if (!dateString) return 'N/A';
@@ -41,6 +63,9 @@ export const UploadViewModal: React.FC<UploadViewModalProps> = ({
       case 'uploading': return 'bg-blue-100 dark:bg-blue-900/20 text-blue-800 dark:text-blue-300';
       case 'uploaded': return 'bg-green-100 dark:bg-green-900/20 text-green-800 dark:text-green-300';
       case 'processing': return 'bg-yellow-100 dark:bg-yellow-900/20 text-yellow-800 dark:text-yellow-300';
+      case 'pending': return 'bg-orange-100 dark:bg-orange-900/20 text-orange-800 dark:text-orange-300';
+      case 'approved': return 'bg-emerald-100 dark:bg-emerald-900/20 text-emerald-800 dark:text-emerald-300';
+      case 'denied': return 'bg-red-100 dark:bg-red-900/20 text-red-800 dark:text-red-300';
       case 'completed': return 'bg-emerald-100 dark:bg-emerald-900/20 text-emerald-800 dark:text-emerald-300';
       case 'error': return 'bg-red-100 dark:bg-red-900/20 text-red-800 dark:text-red-300';
       default: return 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-300';
@@ -343,22 +368,79 @@ export const UploadViewModal: React.FC<UploadViewModalProps> = ({
         </div>
 
         {/* Footer */}
-        <div className="flex justify-end gap-3 p-6 border-t border-gray-200 dark:border-gray-700">
-          <Button
-            variant="outline"
-            onClick={onClose}
-          >
-            Close
-          </Button>
-          <Button
-            variant="primary"
-            onClick={() => {
-              // TODO: Implement download functionality
-              alert(`Download functionality for: ${upload.file_name}`);
-            }}
-          >
-            Download File
-          </Button>
+        <div className="flex flex-col gap-4 p-6 border-t border-gray-200 dark:border-gray-700">
+          {/* Status info */}
+          <div className="flex items-center gap-2 p-3 rounded-lg bg-gray-50 dark:bg-gray-700">
+            {upload.status === 'approved' && (
+              <>
+                <Check className="w-5 h-5 text-green-600 dark:text-green-400" />
+                <span className="text-sm font-medium text-green-700 dark:text-green-300">
+                  This upload has been approved
+                </span>
+              </>
+            )}
+            {upload.status === 'denied' && (
+              <>
+                <XIcon className="w-5 h-5 text-red-600 dark:text-red-400" />
+                <span className="text-sm font-medium text-red-700 dark:text-red-300">
+                  This upload has been denied
+                </span>
+              </>
+            )}
+            {upload.status === 'pending' && (
+              <>
+                <AlertTriangle className="w-5 h-5 text-yellow-600 dark:text-yellow-400" />
+                <span className="text-sm font-medium text-yellow-700 dark:text-yellow-300">
+                  This upload is pending review
+                </span>
+              </>
+            )}
+            {!['approved', 'denied', 'pending'].includes(upload.status || '') && (
+              <>
+                <AlertTriangle className="w-5 h-5 text-yellow-600 dark:text-yellow-400" />
+                <span className="text-sm font-medium text-yellow-700 dark:text-yellow-300">
+                  Status: {upload.status || 'Unknown'}
+                </span>
+              </>
+            )}
+          </div>
+
+          {/* Action Buttons */}
+          <div className="flex justify-between gap-3">
+            {/* Admin Actions - Always visible */}
+            <div className="flex gap-3">
+              <Button
+                variant="success"
+                size="md"
+                icon={Check}
+                onClick={() => handleStatusUpdate('approved')}
+                disabled={isUpdating || upload.status === 'approved'}
+                className="min-w-[100px]"
+              >
+                {isUpdating ? 'Updating...' : 'Approve'}
+              </Button>
+              <Button
+                variant="danger"
+                size="md"
+                icon={XIcon}
+                onClick={() => handleStatusUpdate('denied')}
+                disabled={isUpdating || upload.status === 'denied'}
+                className="min-w-[100px]"
+              >
+                {isUpdating ? 'Updating...' : 'Deny'}
+              </Button>
+            </div>
+
+            {/* Close Button */}
+            <Button
+              variant="outline"
+              onClick={onClose}
+              disabled={isUpdating}
+              className="min-w-[80px]"
+            >
+              Close
+            </Button>
+          </div>
         </div>
       </div>
     </div>
