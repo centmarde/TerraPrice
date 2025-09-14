@@ -109,102 +109,186 @@ const DashboardTable: React.FC = () => {
         </div>
       ) : (
         <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead>
-              <tr className="border-b border-gray-200">
-                <th className="text-left py-3 px-4 font-medium text-gray-900">File</th>
-                <th className="text-left py-3 px-4 font-medium text-gray-900">User</th>
-                <th className="text-left py-3 px-4 font-medium text-gray-900">Size</th>
-                <th className="text-left py-3 px-4 font-medium text-gray-900">Status</th>
-                <th className="text-left py-3 px-4 font-medium text-gray-900">Uploaded</th>
-                <th className="text-left py-3 px-4 font-medium text-gray-900">Updated</th>
-                <th className="text-right py-3 px-4 font-medium text-gray-900">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-200">
-              {uploads.map((upload) => (
-                <tr key={upload.id} className="hover:bg-gray-50 transition-colors">
-                  <td className="py-3 px-4">
-                    <div className="flex items-center space-x-3">
-                      <div className="w-8 h-8 bg-teal-100 rounded-lg flex items-center justify-center">
-                        <FileText className="w-4 h-4 text-teal-600" />
+          {/* Desktop Table */}
+          <div className="hidden lg:block">
+            <table className="w-full">
+              <thead>
+                <tr className="border-b border-gray-200 dark:border-gray-700">
+                  <th className="text-left py-3 px-4 font-medium text-gray-900 dark:text-gray-100">File</th>
+                  <th className="text-left py-3 px-4 font-medium text-gray-900 dark:text-gray-100">User</th>
+                  <th className="text-left py-3 px-4 font-medium text-gray-900 dark:text-gray-100">Size</th>
+                  <th className="text-left py-3 px-4 font-medium text-gray-900 dark:text-gray-100">Status</th>
+                  <th className="text-left py-3 px-4 font-medium text-gray-900 dark:text-gray-100">Uploaded</th>
+                  <th className="text-left py-3 px-4 font-medium text-gray-900 dark:text-gray-100">Updated</th>
+                  <th className="text-right py-3 px-4 font-medium text-gray-900 dark:text-gray-100">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+                {uploads.map((upload) => (
+                  <tr key={upload.id} className="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
+                    <td className="py-3 px-4">
+                      <div className="flex items-center space-x-3">
+                        <div className="w-8 h-8 bg-teal-100 dark:bg-teal-900/50 rounded-lg flex items-center justify-center">
+                          <FileText className="w-4 h-4 text-teal-600 dark:text-teal-400" />
+                        </div>
+                        <div>
+                          <p className="font-medium text-gray-900 dark:text-gray-100 truncate max-w-[200px]" title={upload.file_name}>
+                            {upload.file_name}
+                          </p>
+                          <p className="text-sm text-gray-500 dark:text-gray-400">ID: {upload.id}</p>
+                        </div>
                       </div>
-                      <div>
-                        <p className="font-medium text-gray-900 truncate max-w-[200px]" title={upload.file_name}>
-                          {upload.file_name}
-                        </p>
-                        <p className="text-sm text-gray-500">ID: {upload.id}</p>
+                    </td>
+                    <td className="py-3 px-4">
+                      <div className="flex items-center space-x-2">
+                        <User className="w-4 h-4 text-gray-400" />
+                        <div className="flex flex-col">
+                          <span className="text-sm text-gray-900 dark:text-gray-100 font-medium">
+                            {upload.userDetails?.fullName || 'Anonymous'}
+                          </span>
+                          <span className="text-xs text-gray-500 dark:text-gray-400">
+                            {upload.userDetails?.email || 'No email'}
+                          </span>
+                        </div>
                       </div>
-                    </div>
-                  </td>
-                  <td className="py-3 px-4">
-                    <div className="flex items-center space-x-2">
-                      <User className="w-4 h-4 text-gray-400" />
-                      <div className="flex flex-col">
-                        <span className="text-sm text-gray-900 font-medium">
-                          {upload.userDetails?.fullName || 'Anonymous'}
+                    </td>
+                    <td className="py-3 px-4">
+                      <div className="flex items-center space-x-2">
+                        <HardDrive className="w-4 h-4 text-gray-400" />
+                        <span className="text-sm text-gray-600 dark:text-gray-300">
+                          {formatFileSize(upload.file_size)}
                         </span>
-                        <span className="text-xs text-gray-500">
-                          {upload.userDetails?.email || 'No email'}
+                      </div>
+                    </td>
+                    <td className="py-3 px-4">
+                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(upload.status)}`}>
+                        {upload.status}
+                      </span>
+                    </td>
+                    <td className="py-3 px-4">
+                      <div className="flex items-center space-x-2">
+                        <Calendar className="w-4 h-4 text-gray-400" />
+                        <span className="text-sm text-gray-600 dark:text-gray-300">
+                          {formatDate(upload.created_at)}
                         </span>
                       </div>
-                    </div>
-                  </td>
-                  <td className="py-3 px-4">
-                    <div className="flex items-center space-x-2">
-                      <HardDrive className="w-4 h-4 text-gray-400" />
-                      <span className="text-sm text-gray-600">
+                    </td>
+                    <td className="py-3 px-4">
+                      <div className="flex items-center space-x-2">
+                        <Calendar className="w-4 h-4 text-gray-400" />
+                        <span className="text-sm text-gray-600 dark:text-gray-300">
+                          {formatDate(upload.updated_at)}
+                        </span>
+                      </div>
+                    </td>
+                    <td className="py-3 px-4">
+                      <div className="flex items-center justify-end space-x-2">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          icon={Eye}
+                          onClick={() => handleViewUpload(upload)}
+                          className="text-xs"
+                        >
+                          View
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          icon={Download}
+                          onClick={() => handleDownloadUpload(upload)}
+                          className="text-xs"
+                        >
+                          Download
+                        </Button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Mobile Cards */}
+          <div className="lg:hidden space-y-4">
+            {uploads.map((upload) => (
+              <div key={upload.id} className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4 space-y-4">
+                {/* Header with file info */}
+                <div className="flex items-start space-x-3">
+                  <div className="w-10 h-10 bg-teal-100 dark:bg-teal-900/50 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <FileText className="w-5 h-5 text-teal-600 dark:text-teal-400" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium text-gray-900 dark:text-gray-100 truncate text-sm" title={upload.file_name}>
+                      {upload.file_name}
+                    </p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">ID: {upload.id}</p>
+                    <div className="flex items-center justify-between mt-2">
+                      <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(upload.status)}`}>
+                        {upload.status}
+                      </span>
+                      <span className="text-xs text-gray-500 dark:text-gray-400">
                         {formatFileSize(upload.file_size)}
                       </span>
                     </div>
-                  </td>
-                  <td className="py-3 px-4">
-                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(upload.status)}`}>
-                      {upload.status}
+                  </div>
+                </div>
+
+                {/* User info */}
+                <div className="flex items-center space-x-2 text-sm">
+                  <User className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                  <div className="flex flex-col min-w-0">
+                    <span className="text-gray-900 dark:text-gray-100 font-medium truncate">
+                      {upload.userDetails?.fullName || 'Anonymous'}
                     </span>
-                  </td>
-                  <td className="py-3 px-4">
-                    <div className="flex items-center space-x-2">
-                      <Calendar className="w-4 h-4 text-gray-400" />
-                      <span className="text-sm text-gray-600">
-                        {formatDate(upload.created_at)}
-                      </span>
+                    <span className="text-xs text-gray-500 dark:text-gray-400 truncate">
+                      {upload.userDetails?.email || 'No email'}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Dates */}
+                <div className="grid grid-cols-2 gap-4 text-xs">
+                  <div className="flex items-center space-x-1">
+                    <Calendar className="w-3 h-3 text-gray-400 flex-shrink-0" />
+                    <div className="min-w-0">
+                      <p className="text-gray-500 dark:text-gray-400">Uploaded</p>
+                      <p className="text-gray-700 dark:text-gray-300 truncate">{formatDate(upload.created_at)}</p>
                     </div>
-                  </td>
-                  <td className="py-3 px-4">
-                    <div className="flex items-center space-x-2">
-                      <Calendar className="w-4 h-4 text-gray-400" />
-                      <span className="text-sm text-gray-600">
-                        {formatDate(upload.updated_at)}
-                      </span>
+                  </div>
+                  <div className="flex items-center space-x-1">
+                    <Calendar className="w-3 h-3 text-gray-400 flex-shrink-0" />
+                    <div className="min-w-0">
+                      <p className="text-gray-500 dark:text-gray-400">Updated</p>
+                      <p className="text-gray-700 dark:text-gray-300 truncate">{formatDate(upload.updated_at)}</p>
                     </div>
-                  </td>
-                  <td className="py-3 px-4">
-                    <div className="flex items-center justify-end space-x-2">
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        icon={Eye}
-                        onClick={() => handleViewUpload(upload)}
-                        className="text-xs"
-                      >
-                        View
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        icon={Download}
-                        onClick={() => handleDownloadUpload(upload)}
-                        className="text-xs"
-                      >
-                        Download
-                      </Button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+                  </div>
+                </div>
+
+                {/* Actions */}
+                <div className="flex items-center space-x-2 pt-2 border-t border-gray-100 dark:border-gray-700">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    icon={Eye}
+                    onClick={() => handleViewUpload(upload)}
+                    className="flex-1 text-xs touch-manipulation"
+                  >
+                    View Details
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    icon={Download}
+                    onClick={() => handleDownloadUpload(upload)}
+                    className="flex-1 text-xs touch-manipulation"
+                  >
+                    Download
+                  </Button>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       )}
       </Card>

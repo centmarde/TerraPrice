@@ -3,11 +3,11 @@ export interface FloorplanSubmission {
   userId: string;
   imageUrl: string;
   estimatedCost: number;
-  status: 'pending' | 'approved' | 'denied';
+  status: 'pending' | 'approved' | 'rejected';
   submittedAt: Date;
   reviewedAt?: Date;
   adminNotes?: string;
-  userDetails: UserInfo;
+  userDetails?: UserInfo | null;
   squareFootage?: number;
   location?: string;
 }
@@ -38,35 +38,33 @@ export interface AuthState {
 
 export interface MobileUpload {
   id: number;
-  user_id: string;
-  userDetails?: UserInfo;
-  created_at: string;
+  user_id: string | null;
+  userDetails?: UserInfo | null;
+  created_at: string | null;
   file_name: string;
   file_path: string;
-  ai_analysis_path?: string;
-  file_size?: number;
-  comments?: string;
-  status: 'approved' | 'denied' | 'pending' | 'uploading' | 'uploaded' | 'processing' | 'completed' | 'error';
-  updated_at: string;
+  file_size: number | null;
+  status: 'uploading' | 'uploaded' | 'processing' | 'pending' | 'approved' | 'denied' | 'completed' | 'error';
+  updated_at: string | null;
 }
 
 export interface MobileUploadsState {
   uploads: MobileUpload[];
-  selectedUpload?: MobileUpload;
+  selectedUpload: MobileUpload | null;
   isLoading: boolean;
-  isDialogOpen: boolean;
+  subscription: any;
   fetchUploads: () => Promise<void>;
   fetchUploadsByUserId: (userId: string) => Promise<void>;
   fetchUploadsByStatus: (status: MobileUpload['status']) => Promise<void>;
   selectUpload: (id: number) => void;
-  updateUploadStatus: (id: number, status: MobileUpload['status'], comments?: string) => Promise<void>;
-  openDialog: (upload: MobileUpload) => void;
-  closeDialog: () => void;
+  updateUploadStatus: (id: number, status: MobileUpload['status']) => Promise<void>;
+  subscribeToUploads: () => void;
+  unsubscribeFromUploads: () => void;
 }
 
 export interface FloorplanState {
   submissions: FloorplanSubmission[];
-  selectedSubmission: FloorplanSubmission ;
+  selectedSubmission: FloorplanSubmission | null;
   isLoading: boolean;
   fetchSubmissions: () => Promise<void>;
   selectSubmission: (id: string) => void;
