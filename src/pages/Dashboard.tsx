@@ -45,24 +45,23 @@ const Dashboard: React.FC = () => {
   });
 
   return (
-
-    <div className="space-y-4 sm:space-y-6 lg:space-y-8">
+    <div className="space-y-6 sm:space-y-8">
+      {/* Page Header */}
       <div className="px-1">
-        <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 dark:text-white mb-2 transition-colors duration-200">Dashboard</h1>
-        <p className="text-sm lg:text-base text-gray-600 dark:text-gray-300 transition-colors duration-200">
-
+        <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 dark:text-white mb-2 transition-colors duration-200">
+          Dashboard
+        </h1>
+        <p className="text-base lg:text-lg text-gray-600 dark:text-gray-300 transition-colors duration-200">
           Overview of floorplan submissions and review status
         </p>
       </div>
 
       {/* Statistics cards */}
-
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-6">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
         {uploadsLoading ? (
           <>
             {[...Array(4)].map((_, index) => (
               <StatCardSkeleton key={index} />
-
             ))}
           </>
         ) : (
@@ -102,7 +101,6 @@ const Dashboard: React.FC = () => {
         )}
       </div>
 
-
       {/* Enhanced Mobile Uploads Section */}
       <div className="w-full">
         <MobileUploadsSection 
@@ -110,7 +108,6 @@ const Dashboard: React.FC = () => {
           isLoading={uploadsLoading}
         />
       </div>
-
     </div>
   );
 };

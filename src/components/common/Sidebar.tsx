@@ -49,12 +49,12 @@ const Sidebar: React.FC<SidebarProps> = ({ sidebarOpen, setSidebarOpen, onLogout
         <div className="flex flex-col h-full">
           {/* Logo and close button */}
           <div className="flex items-center justify-between p-4 lg:p-6 border-b border-gray-200 dark:border-gray-700 min-h-[64px]">
-            <div className="flex items-center flex-shrink-0 min-w-0">
-              <Logo size="sm" showText={true} className="max-w-full" />
+            <div className="flex items-center">
+              <Logo size="sm" showText={true} />
             </div>
             <button
               onClick={() => setSidebarOpen(false)}
-              className="lg:hidden p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-300 transition-colors duration-200 touch-manipulation flex-shrink-0"
+              className="lg:hidden p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-300 transition-colors duration-200 touch-manipulation"
               aria-label="Close sidebar"
             >
               <X className="w-5 h-5" />
@@ -69,10 +69,10 @@ const Sidebar: React.FC<SidebarProps> = ({ sidebarOpen, setSidebarOpen, onLogout
                 <NavLink
                   to={item.to}
                   className={({ isActive }) => `
-                    flex items-center px-3 lg:px-4 py-3 lg:py-3 text-sm lg:text-sm font-medium rounded-lg transition-all duration-200 group touch-manipulation
+                    flex items-center px-3 lg:px-4 py-3 lg:py-3 text-sm lg:text-sm font-medium rounded-xl transition-all duration-200 group touch-manipulation
                     ${isActive 
-                      ? 'bg-teal-50 dark:bg-teal-900/30 text-teal-700 dark:text-teal-300 border-r-4 border-teal-600 dark:border-teal-400 shadow-sm' 
-                      : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800/50 hover:text-gray-900 dark:hover:text-white'
+                      ? 'bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/30 dark:to-indigo-900/30 text-blue-700 dark:text-blue-300 border-r-4 border-blue-600 dark:border-blue-400 shadow-lg backdrop-blur-sm' 
+                      : 'text-gray-700 dark:text-gray-300 hover:bg-gradient-to-r hover:from-gray-50 hover:to-gray-100 dark:hover:from-gray-800/50 dark:hover:to-gray-700/50 hover:text-gray-900 dark:hover:text-white hover:shadow-md'
                     }
                   `}
                   onClick={() => setSidebarOpen(false)}
@@ -86,9 +86,9 @@ const Sidebar: React.FC<SidebarProps> = ({ sidebarOpen, setSidebarOpen, onLogout
         </nav>
 
         {/* User info and logout */}
-        <div className="p-3 lg:p-4 border-t border-gray-200 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/30">
-          <div className="mb-3">
-            <p className="text-sm font-medium text-gray-900 dark:text-white truncate">{user?.fullName || 'Admin User'}</p>
+        <div className="p-3 lg:p-4 border-t border-gray-200 dark:border-gray-700 bg-gradient-to-r from-gray-50/80 to-gray-100/80 dark:from-gray-800/50 dark:to-gray-700/50 backdrop-blur-sm">
+          <div className="mb-3 p-3 rounded-xl bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm border border-gray-200/50 dark:border-gray-600/50">
+            <p className="text-sm font-semibold text-gray-900 dark:text-white truncate">{user?.fullName || 'Admin User'}</p>
             <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{user?.email || 'admin@terraprice.com'}</p>
           </div>
           <Button
@@ -97,9 +97,9 @@ const Sidebar: React.FC<SidebarProps> = ({ sidebarOpen, setSidebarOpen, onLogout
             icon={LogOut}
             onClick={onLogout}
             fullWidth
-            className="touch-manipulation hover:bg-red-50 hover:border-red-200 hover:text-red-700 dark:hover:bg-red-900/20 dark:hover:border-red-800 dark:hover:text-red-400 transition-colors duration-200"
+            className="touch-manipulation hover:bg-gradient-to-r hover:from-red-50 hover:to-pink-50 hover:border-red-200 hover:text-red-700 dark:hover:from-red-900/20 dark:hover:to-pink-900/20 dark:hover:border-red-800 dark:hover:text-red-400 transition-all duration-200 rounded-xl shadow-sm hover:shadow-md"
           >
-            <span className="text-xs lg:text-sm">Sign Out</span>
+            <span className="text-xs lg:text-sm font-medium">Sign Out</span>
           </Button>
         </div>
         </div>

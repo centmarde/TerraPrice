@@ -22,7 +22,7 @@ export const Card: React.FC<CardProps> = ({
   };
 
   const hoverClasses = hover 
-    ? 'hover:shadow-xl hover:-translate-y-1 sm:hover:-translate-y-2 hover:shadow-gray-200/20 dark:hover:shadow-gray-900/40 transition-all duration-300 cursor-pointer group' 
+    ? 'hover:shadow-2xl hover:-translate-y-1 sm:hover:-translate-y-2 hover:shadow-blue-200/30 dark:hover:shadow-blue-900/40 hover:border-blue-300/50 dark:hover:border-blue-600/50 transition-all duration-300 cursor-pointer group' 
     : '';
 
   const animatedClasses = animated
@@ -30,7 +30,7 @@ export const Card: React.FC<CardProps> = ({
     : '';
 
   return (
-    <div className={`bg-white dark:bg-gray-800 rounded-lg sm:rounded-xl shadow-md dark:shadow-gray-900/20 border border-gray-100 dark:border-gray-700 transition-colors duration-200 ${paddingClasses[padding]} ${hoverClasses} ${animatedClasses} ${className}`}>
+    <div className={`bg-gradient-to-br from-white via-white to-gray-50/50 dark:from-gray-800 dark:via-gray-800 dark:to-gray-900/50 rounded-xl sm:rounded-2xl shadow-lg dark:shadow-gray-900/30 border border-gray-200/70 dark:border-gray-700/70 backdrop-blur-sm transition-all duration-300 ${paddingClasses[padding]} ${hoverClasses} ${animatedClasses} ${className}`}>
       {children}
     </div>
   );
