@@ -25,7 +25,7 @@ interface MobileUploadsProps {
   isLoading: boolean;
 }
 
-const ITEMS_PER_PAGE = 5;
+const ITEMS_PER_PAGE = 50; // Increased to show more uploads at once
 
 export const MobileUploadsSection: React.FC<MobileUploadsProps> = ({ 
   uploads, 
