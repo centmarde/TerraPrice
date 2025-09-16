@@ -41,12 +41,11 @@ export const useMobileUploadsStore = create<MobileUploadsState>((set, get) => ({
     try {
       console.log('🔍 Fetching uploads with optimized query...');
       
-      // Fetch more records but still limit to avoid timeout
+      // Fetch all records - no limit to show everything to boss
       const { data, error } = await supabaseAdmin
         .from('mobile_uploads')
         .select('id, user_id, file_name, file_path, file_size, status, created_at, updated_at')
-        .order('created_at', { ascending: false })
-        .limit(50); // Increased to 50
+        .order('created_at', { ascending: false });
 
       console.log('📊 Query result:', { 
         dataLength: data?.length, 
@@ -84,8 +83,7 @@ export const useMobileUploadsStore = create<MobileUploadsState>((set, get) => ({
                 userDetails = {
                   id: userData.user.id,
                   email: userData.user.email || '',
-                  fullName: userData.user.user_metadata?.full_name || userData.user.email || 'Unknown User',
-                  phoneNumber: userData.user.user_metadata?.phone_number || undefined
+                  fullName: userData.user.user_metadata?.full_name || userData.user.email || 'Unknown User'
                 };
               }
             } catch (userFetchError) {

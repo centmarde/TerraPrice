@@ -25,7 +25,7 @@ interface MobileUploadsProps {
   isLoading: boolean;
 }
 
-const ITEMS_PER_PAGE = 5;
+const ITEMS_PER_PAGE = 50; // Increased to show more uploads at once
 
 export const MobileUploadsSection: React.FC<MobileUploadsProps> = ({ 
   uploads, 
@@ -47,7 +47,17 @@ export const MobileUploadsSection: React.FC<MobileUploadsProps> = ({
       (upload.userDetails?.fullName?.toLowerCase().includes(searchTerm.toLowerCase())) ||
       (upload.userDetails?.email?.toLowerCase().includes(searchTerm.toLowerCase()));
     
-    const matchesStatus = statusFilter === 'all' || upload.status === statusFilter;
+    let matchesStatus = false;
+    
+    if (statusFilter === 'all') {
+      matchesStatus = true;
+    } else if (statusFilter === 'pending') {
+      // Pending means not approved and not denied (matches Dashboard logic)
+      matchesStatus = upload.status !== 'approved' && upload.status !== 'denied';
+    } else {
+      // For 'approved' and 'denied', match exact status
+      matchesStatus = upload.status === statusFilter;
+    }
     
     return matchesSearch && matchesStatus;
   });
@@ -75,10 +85,17 @@ export const MobileUploadsSection: React.FC<MobileUploadsProps> = ({
 
   const getStatusColor = (status: string | null) => {
     switch (status) {
-      case 'pending': return 'bg-yellow-100 dark:bg-yellow-900/20 text-yellow-800 dark:text-yellow-300';
       case 'approved': return 'bg-green-100 dark:bg-green-900/20 text-green-800 dark:text-green-300';
       case 'denied': return 'bg-red-100 dark:bg-red-900/20 text-red-800 dark:text-red-300';
-      default: return 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-300';
+      default: return 'bg-yellow-100 dark:bg-yellow-900/20 text-yellow-800 dark:text-yellow-300'; // pending (null or any other status)
+    }
+  };
+
+  const getStatusLabel = (status: string | null) => {
+    switch (status) {
+      case 'approved': return 'Approved';
+      case 'denied': return 'Denied';
+      default: return 'Pending'; // null or any other status is considered pending
     }
   };
 
@@ -157,53 +174,61 @@ export const MobileUploadsSection: React.FC<MobileUploadsProps> = ({
   };
 
   return (
-    <Card>
+    <Card className="overflow-hidden">
       <CardHeader 
         title="Mobile Uploads"
         subtitle={`${filteredUploads.length} total uploads${statusFilter !== 'all' ? ` (${statusFilter})` : ''}`}
         action={
-          <div className="flex items-center space-x-2">
-            <span className="text-sm text-gray-500 dark:text-gray-400">
-              {filteredUploads.length} uploads
-            </span>
-            <Upload className="w-4 h-4 text-gray-400" />
+          <div className="flex items-center space-x-3">
+            <div className="flex items-center space-x-2 text-sm">
+              <div className="flex items-center space-x-1 bg-teal-50 dark:bg-teal-900/30 px-3 py-1.5 rounded-full border border-teal-200 dark:border-teal-700">
+                <Upload className="w-4 h-4 text-teal-600 dark:text-teal-400" />
+                <span className="font-semibold text-teal-700 dark:text-teal-300">
+                  {filteredUploads.length}
+                </span>
+              </div>
+            </div>
           </div>
         }
       />
 
-      {/* Search and Filter Bar */}
-      <div className="mb-6 flex flex-col sm:flex-row gap-4">
-        {/* Search Input */}
-        <div className="flex-1 relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
-          <input
-            type="text"
-            placeholder="Search uploads, files, or users..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg
-                     bg-white dark:bg-gray-700 text-gray-900 dark:text-white
-                     focus:ring-2 focus:ring-teal-500 focus:border-transparent
-                     placeholder-gray-500 dark:placeholder-gray-400 transition-colors duration-200"
-          />
-        </div>
+      {/* Enhanced Search and Filter Bar */}
+      <div className="px-6 pb-6 border-b border-gray-100 dark:border-gray-700">
+        <div className="flex flex-col sm:flex-row gap-4">
+          {/* Search Input */}
+          <div className="flex-1 relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <input
+              type="text"
+              placeholder="Search uploads, files, or users..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full pl-10 pr-4 py-3 border border-gray-200 dark:border-gray-600 rounded-xl
+                       bg-white dark:bg-gray-800 text-gray-900 dark:text-white
+                       focus:ring-2 focus:ring-teal-500 focus:border-transparent
+                       placeholder-gray-500 dark:placeholder-gray-400 transition-all duration-200
+                       hover:border-gray-300 dark:hover:border-gray-500 shadow-sm hover:shadow-md"
+            />
+          </div>
 
-        {/* Status Filter */}
-        <div className="relative">
-          <Filter className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
-          <select
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
-            className="pl-10 pr-8 py-2 border border-gray-300 dark:border-gray-600 rounded-lg
-                     bg-white dark:bg-gray-700 text-gray-900 dark:text-white
-                     focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-colors duration-200"
-          >
-            {statusOptions.map(option => (
-              <option key={option.value} value={option.value}>
-                {option.label}
-              </option>
-            ))}
-          </select>
+          {/* Status Filter */}
+          <div className="relative">
+            <Filter className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+              className="pl-10 pr-8 py-3 border border-gray-200 dark:border-gray-600 rounded-xl
+                       bg-white dark:bg-gray-800 text-gray-900 dark:text-white
+                       focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-200
+                       hover:border-gray-300 dark:hover:border-gray-500 shadow-sm hover:shadow-md cursor-pointer"
+            >
+              {statusOptions.map(option => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+          </div>
         </div>
       </div>
       
@@ -230,22 +255,22 @@ export const MobileUploadsSection: React.FC<MobileUploadsProps> = ({
       ) : (
         <>
           {/* Upload Cards */}
-          <div className="space-y-3">
+          <div className="space-y-4">
             {paginatedUploads.map((upload, index) => (
               <div 
                 key={upload.id}
-                className={`group p-4 border border-gray-200 dark:border-gray-600 rounded-lg
-                         bg-white dark:bg-gray-700/50 hover:shadow-lg hover:border-teal-300 dark:hover:border-teal-600
-                         hover:bg-gray-50 dark:hover:bg-gray-700/70 hover:-translate-y-1
+                className={`group p-5 border border-gray-200 dark:border-gray-600 rounded-xl
+                         bg-white dark:bg-gray-800/50 hover:shadow-xl hover:border-teal-300 dark:hover:border-teal-600
+                         hover:bg-gray-50/80 dark:hover:bg-gray-800/70 hover:-translate-y-1
                          transition-all duration-300 cursor-pointer transform
-                         animate-fadeInUp opacity-0`}
+                         animate-fadeInUp opacity-0 backdrop-blur-sm`}
                 style={{ animationDelay: `${index * 100}ms` }}
               >
                 <div className="flex items-center justify-between">
                   {/* File Info */}
                   <div className="flex items-center space-x-4 flex-1 min-w-0">
                     {/* File Thumbnail/Icon */}
-                    <div className="w-12 h-12 bg-teal-100 dark:bg-teal-900/30 rounded-lg flex items-center justify-center flex-shrink-0 overflow-hidden">
+                    <div className="w-14 h-14 bg-gradient-to-br from-teal-50 to-teal-100 dark:from-teal-900/30 dark:to-teal-800/30 rounded-xl flex items-center justify-center flex-shrink-0 overflow-hidden border border-teal-200 dark:border-teal-700 shadow-sm">
                       {(() => {
                         const isImage = upload.file_name && /\.(jpg|jpeg|png|gif|bmp|webp)$/i.test(upload.file_name);
                         
@@ -271,58 +296,64 @@ export const MobileUploadsSection: React.FC<MobileUploadsProps> = ({
                                 const target = e.target as HTMLImageElement;
                                 const parent = target.parentElement;
                                 if (parent) {
-                                  parent.innerHTML = '<div class="w-6 h-6 text-teal-600 dark:text-teal-400"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg></div>';
+                                  parent.innerHTML = '<div class="w-7 h-7 text-teal-600 dark:text-teal-400"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg></div>';
                                 }
                               }}
                             />
                           );
                         } else {
                           console.log('Not an image or no file path, showing icon for:', upload.file_name);
-                          return <FileImage className="w-6 h-6 text-teal-600 dark:text-teal-400" />;
+                          return <FileImage className="w-7 h-7 text-teal-600 dark:text-teal-400" />;
                         }
                       })()}
                     </div>
                     
                     <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2">
-                        <p className="font-medium text-gray-900 dark:text-white truncate">
+                      <div className="flex items-center gap-3 mb-2">
+                        <p className="font-semibold text-gray-900 dark:text-white truncate text-base">
                           {upload.file_name || 'Unknown File'}
                         </p>
-                        <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${getStatusColor(upload.status)}`}>
-                          {upload.status || 'unknown'}
+                        <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold ${getStatusColor(upload.status)} shadow-sm`}>
+                          {getStatusLabel(upload.status)}
                         </span>
                       </div>
                       
-                      <div className="flex items-center gap-4 mt-1 text-sm text-gray-500 dark:text-gray-400">
-                        <span className="flex items-center gap-1">
-                          <Calendar className="w-3 h-3" />
+                      <div className="flex items-center gap-6 text-sm text-gray-600 dark:text-gray-400">
+                        <span className="flex items-center gap-1.5">
+                          <Calendar className="w-4 h-4" />
                           {formatDate(upload.created_at)}
                         </span>
-                        <span>{formatFileSize(upload.file_size)}</span>
-                        <span className="flex items-center gap-1">
-                          <User className="w-3 h-3" />
+                        <span className="flex items-center gap-1.5">
+                          <User className="w-4 h-4" />
                           {upload.userDetails?.fullName || upload.userDetails?.email || 'Unknown User'}
+                        </span>
+                        <span className="text-gray-500 dark:text-gray-400 font-medium">
+                          {formatFileSize(upload.file_size)}
                         </span>
                       </div>
                     </div>
                   </div>
 
                   {/* Action Buttons */}
-                  <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-x-2 group-hover:translate-x-0">
+                  <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-x-4 group-hover:translate-x-0">
                     <button
                       onClick={() => handleViewUpload(upload)}
-                      className="p-2 rounded-lg bg-teal-50 hover:bg-teal-100 dark:bg-teal-900/20 dark:hover:bg-teal-900/40 
+                      className="p-3 rounded-xl bg-gradient-to-br from-teal-50 to-teal-100 hover:from-teal-100 hover:to-teal-200 
+                               dark:from-teal-900/20 dark:to-teal-800/20 dark:hover:from-teal-900/40 dark:hover:to-teal-800/40
                                text-teal-600 dark:text-teal-400 hover:text-teal-700 dark:hover:text-teal-300
-                               transition-all duration-200 hover:scale-110 active:scale-95 hover:shadow-md hover:shadow-teal-200/50"
+                               transition-all duration-200 hover:scale-110 active:scale-95 hover:shadow-lg hover:shadow-teal-200/50
+                               border border-teal-200 dark:border-teal-700"
                       title="View Details"
                     >
                       <Eye className="w-4 h-4" />
                     </button>
                     <button
                       onClick={() => handleDownloadUpload(upload)}
-                      className="p-2 rounded-lg bg-blue-50 hover:bg-blue-100 dark:bg-blue-900/20 dark:hover:bg-blue-900/40 
+                      className="p-3 rounded-xl bg-gradient-to-br from-blue-50 to-blue-100 hover:from-blue-100 hover:to-blue-200
+                               dark:from-blue-900/20 dark:to-blue-800/20 dark:hover:from-blue-900/40 dark:hover:to-blue-800/40
                                text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300
-                               transition-all duration-200 hover:scale-110 active:scale-95 hover:shadow-md hover:shadow-blue-200/50"
+                               transition-all duration-200 hover:scale-110 active:scale-95 hover:shadow-lg hover:shadow-blue-200/50
+                               border border-blue-200 dark:border-blue-700"
                       title="Download File"
                     >
                       <Download className="w-4 h-4" />
