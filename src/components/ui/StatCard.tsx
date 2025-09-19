@@ -12,28 +12,36 @@ interface StatCardProps {
 
 const colorClasses = {
   yellow: {
-    border: 'border-yellow-500',
-    iconBg: 'bg-yellow-500/20',
-    iconColor: 'text-yellow-400',
-    textColor: 'text-yellow-400',
+    bg: 'bg-gradient-to-br from-yellow-50 to-yellow-100 dark:from-yellow-900/20 dark:to-yellow-800/20',
+    border: 'border-yellow-200 dark:border-yellow-500/30',
+    iconBg: 'bg-yellow-500/20 dark:bg-yellow-500/30',
+    iconColor: 'text-yellow-600 dark:text-yellow-400',
+    titleColor: 'text-yellow-700 dark:text-yellow-300',
+    valueColor: 'text-yellow-900 dark:text-yellow-100',
   },
   green: {
-    border: 'border-green-500',
-    iconBg: 'bg-green-500/20',
-    iconColor: 'text-green-400',
-    textColor: 'text-green-400',
+    bg: 'bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20',
+    border: 'border-green-200 dark:border-green-500/30',
+    iconBg: 'bg-green-500/20 dark:bg-green-500/30',
+    iconColor: 'text-green-600 dark:text-green-400',
+    titleColor: 'text-green-700 dark:text-green-300',
+    valueColor: 'text-green-900 dark:text-green-100',
   },
   red: {
-    border: 'border-red-500',
-    iconBg: 'bg-red-500/20',
-    iconColor: 'text-red-400',
-    textColor: 'text-red-400',
+    bg: 'bg-gradient-to-br from-red-50 to-red-100 dark:from-red-900/20 dark:to-red-800/20',
+    border: 'border-red-200 dark:border-red-500/30',
+    iconBg: 'bg-red-500/20 dark:bg-red-500/30',
+    iconColor: 'text-red-600 dark:text-red-400',
+    titleColor: 'text-red-700 dark:text-red-300',
+    valueColor: 'text-red-900 dark:text-red-100',
   },
   blue: {
-    border: 'border-blue-500',
-    iconBg: 'bg-blue-500/20',
-    iconColor: 'text-blue-400',
-    textColor: 'text-blue-400',
+    bg: 'bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20',
+    border: 'border-blue-200 dark:border-blue-500/30',
+    iconBg: 'bg-blue-500/20 dark:bg-blue-500/30',
+    iconColor: 'text-blue-600 dark:text-blue-400',
+    titleColor: 'text-blue-700 dark:text-blue-300',
+    valueColor: 'text-blue-900 dark:text-blue-100',
   },
 };
 
@@ -54,25 +62,29 @@ export const StatCard: React.FC<StatCardProps> = ({
 
   return (
     <div className={`
-      bg-gray-800 border-2 ${colors.border} rounded-xl p-4 lg:p-6
-      transition-all duration-300 hover:transform hover:scale-105 hover:shadow-lg
-      cursor-pointer group
+      ${colors.bg} border ${colors.border} rounded-xl p-4 lg:p-6
+      transition-all duration-300 hover:transform hover:scale-[1.02] hover:shadow-xl
+      cursor-pointer group relative overflow-hidden
     `}>
-      <div className="flex items-center gap-2 lg:gap-3">
+      {/* Subtle background pattern */}
+      <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent pointer-events-none" />
+      
+      <div className="relative flex items-center gap-3 lg:gap-4">
         <div className={`
-          w-8 h-8 lg:w-10 lg:h-10 ${colors.iconBg} rounded-lg 
+          w-12 h-12 lg:w-14 lg:h-14 ${colors.iconBg} rounded-xl
           flex items-center justify-center flex-shrink-0
-          transition-transform duration-300 group-hover:scale-110
+          transition-all duration-300 group-hover:scale-110 group-hover:rotate-3
+          shadow-lg
         `}>
-          <Icon className={`w-4 h-4 lg:w-5 lg:h-5 ${colors.iconColor}`} />
+          <Icon className={`w-6 h-6 lg:w-7 lg:h-7 ${colors.iconColor}`} />
         </div>
-        <div className="min-w-0">
-          <p className={`text-xs lg:text-sm font-medium ${colors.textColor} transition-colors duration-200`}>
+        <div className="min-w-0 flex-1">
+          <p className={`text-sm lg:text-base font-semibold ${colors.titleColor} transition-colors duration-200 mb-1`}>
             {title}
           </p>
           <p className={`
-            text-2xl lg:text-3xl font-bold text-white transition-all duration-300
-            ${isAnimating ? 'text-shadow-glow' : ''}
+            text-2xl lg:text-4xl font-bold ${colors.valueColor} transition-all duration-300
+            ${isAnimating ? 'scale-110' : ''}
           `}>
             {count}
           </p>

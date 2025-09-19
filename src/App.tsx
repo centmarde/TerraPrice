@@ -18,17 +18,31 @@ function App() {
 
   useEffect(() => {
     const initAuth = async () => {
-      await checkAuth();
-      setIsInitialized(true);
+      try {
+        await checkAuth();
+      } catch (error) {
+        console.error('Auth initialization failed:', error);
+      } finally {
+        setIsInitialized(true);
+      }
     };
-    initAuth();
+    
+    // Set a timeout to prevent infinite loading
+    const timeout = setTimeout(() => {
+      console.warn('Auth initialization timeout - forcing initialization');
+      setIsInitialized(true);
+    }, 3000); // 3 seconds timeout (reduced from 5)
+    
+    initAuth().finally(() => {
+      clearTimeout(timeout);
+    });
   }, [checkAuth]);
 
   // Show loading screen while initializing authentication
   if (!isInitialized || isLoading) {
     return (
       <ThemeProvider>
-        <FullScreenLoader variant="ring" text="Initializing TerraPrice..." />
+        <FullScreenLoader text="Initializing TerraPrice..." />
       </ThemeProvider>
     );
   }
