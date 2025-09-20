@@ -21,12 +21,12 @@ const FloorplanReview: React.FC = () => {
     }
   }, [id, selectSubmission]);
 
-  const handleStatusUpdate = async (status: FloorplanSubmission['status'], notes?: string) => {
+  const handleStatusUpdate = async (status: FloorplanSubmission['status'], notes?: string, denialReason?: string) => {
     if (!selectedSubmission) return;
     
     setIsUpdating(true);
     try {
-      await updateSubmissionStatus(selectedSubmission.id, status, notes);
+      await updateSubmissionStatus(selectedSubmission.id, status, notes, denialReason);
       // Optionally navigate back to list or show success message
     } catch (error) {
       console.error('Failed to update status:', error);
@@ -91,7 +91,7 @@ const FloorplanReview: React.FC = () => {
         <div className="lg:col-span-2 space-y-6">
           <FloorplanViewer 
             imageUrl={selectedSubmission.imageUrl}
-            alt={`Floorplan for ${selectedSubmission.userDetails.fullName}`}
+            alt={`Floorplan for ${selectedSubmission.userDetails?.fullName || 'User'}`}
           />
 
           {/* Cost estimation */}
@@ -137,13 +137,13 @@ const FloorplanReview: React.FC = () => {
             <div className="space-y-3">
               <div className="flex items-center text-sm">
                 <User className="w-4 h-4 text-gray-400 mr-3" />
-                <span className="font-medium">{selectedSubmission.userDetails.fullName}</span>
+                <span className="font-medium">{selectedSubmission.userDetails?.fullName || 'Unknown User'}</span>
               </div>
               <div className="flex items-center text-sm">
                 <Mail className="w-4 h-4 text-gray-400 mr-3" />
-                <span>{selectedSubmission.userDetails.email}</span>
+                <span>{selectedSubmission.userDetails?.email || 'No email provided'}</span>
               </div>
-              {selectedSubmission.userDetails.phoneNumber && (
+              {selectedSubmission.userDetails?.phoneNumber && (
                 <div className="flex items-center text-sm">
                   <Phone className="w-4 h-4 text-gray-400 mr-3" />
                   <span>{selectedSubmission.userDetails.phoneNumber}</span>

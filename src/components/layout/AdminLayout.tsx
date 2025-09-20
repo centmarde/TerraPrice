@@ -56,8 +56,10 @@ const AdminLayout: React.FC = () => {
         </header>
 
         {/* Scrollable Page content */}
-        <main className="flex-1 p-4 lg:p-6 overflow-y-auto bg-gradient-to-br from-gray-50/80 via-white/50 to-gray-100/80 dark:from-gray-900/80 dark:via-gray-800/50 dark:to-gray-900/80 min-h-[calc(100vh-73px)]">
-          <Outlet />
+        <main className="flex-1 p-4 lg:p-6 bg-gradient-to-br from-gray-50/80 via-white/50 to-gray-100/80 dark:from-gray-900/80 dark:via-gray-800/50 dark:to-gray-900/80 min-h-0">
+          <div className="h-full overflow-y-auto">
+            <Outlet />
+          </div>
         </main>
       </div>
     </div>

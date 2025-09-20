@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, FileImage, Calendar, User, HardDrive, MapPin, Clock, Check, XIcon, AlertTriangle } from 'lucide-react';
+import { X, FileImage, Calendar, User, HardDrive, MapPin, Clock, Check, XIcon, AlertTriangle, Undo2 } from 'lucide-react';
 import { Card } from '../ui/Card';
 import { Button } from '../ui/Button';
 import { MobileUpload } from '../../types';
@@ -19,7 +19,7 @@ export const UploadViewModal: React.FC<UploadViewModalProps> = ({
   onClose 
 }) => {
   const [isUpdating, setIsUpdating] = useState(false);
-  const { updateUploadStatus } = useMobileUploadsStore();
+  const { updateUploadStatus, undoStatusChange, recentActions } = useMobileUploadsStore();
 
   if (!isOpen || !upload) return null;
 
@@ -58,6 +58,47 @@ export const UploadViewModal: React.FC<UploadViewModalProps> = ({
     }
   };
 
+  const handleUndo = async () => {
+    if (!upload || isUpdating) return;
+    
+    setIsUpdating(true);
+    try {
+      console.log('🔄 Starting undo action:', { uploadId: upload.id });
+      await undoStatusChange(upload.id.toString());
+      console.log('✅ Undo successful');
+      
+      // Close modal after successful undo
+      setTimeout(() => {
+        onClose();
+      }, 1000);
+    } catch (error) {
+      console.error('❌ Failed to undo action:', error);
+      
+      let errorMessage = 'Failed to undo action. Please try again.';
+      if (error instanceof Error) {
+        errorMessage = error.message;
+      }
+      
+      alert(errorMessage);
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
+  // Check if upload is already reviewed
+  const isReviewed = upload?.status === 'approved' || upload?.status === 'denied';
+
+  // Debug logging
+  if (upload) {
+    console.log('Modal Debug:', {
+      uploadId: upload.id,
+      status: upload.status,
+      isReviewed: isReviewed,
+      recentActionsCount: recentActions.length,
+      hasMatchingAction: recentActions.some(action => action.submissionId === upload.id.toString())
+    });
+  }
+
   const formatDate = (dateString: string | null) => {
     if (!dateString) return 'N/A';
     return new Date(dateString).toLocaleDateString('en-US', {
@@ -90,10 +131,10 @@ export const UploadViewModal: React.FC<UploadViewModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+    <div className="fixed inset-0 z-50 flex items-start sm:items-center justify-center p-2 sm:p-4 bg-black/50 backdrop-blur-sm overflow-y-auto">
+      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-2xl w-full my-4 sm:my-8 flex flex-col max-h-[calc(100vh-2rem)] sm:max-h-[calc(100vh-4rem)]">
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
+        <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700 flex-shrink-0">
           <div className="flex items-center gap-3">
             <div className="w-12 h-12 bg-teal-100 dark:bg-teal-900/30 rounded-lg flex items-center justify-center">
               <FileImage className="w-6 h-6 text-teal-600 dark:text-teal-400" />
@@ -118,7 +159,7 @@ export const UploadViewModal: React.FC<UploadViewModalProps> = ({
         </div>
 
         {/* Content */}
-        <div className="p-6 space-y-6">
+        <div className="flex-1 overflow-y-auto p-6 space-y-6 min-h-0">
           {/* Status Badge */}
           <div className="flex items-center gap-2">
             <span className="text-sm font-medium text-gray-600 dark:text-gray-400">Status:</span>
@@ -421,39 +462,59 @@ export const UploadViewModal: React.FC<UploadViewModalProps> = ({
               </>
             )}
           </div>
+        </div>
 
-          {/* Action Buttons */}
-          <div className="flex justify-between gap-3">
-            {/* Admin Actions - Always visible */}
-            <div className="flex gap-3">
-              <Button
-                variant="success"
-                size="md"
-                icon={Check}
-                onClick={() => handleStatusUpdate('approved')}
-                disabled={isUpdating || upload.status === 'approved'}
-                className="min-w-[100px]"
-              >
-                {isUpdating ? 'Updating...' : 'Approve'}
-              </Button>
-              <Button
-                variant="danger"
-                size="md"
-                icon={XIcon}
-                onClick={() => handleStatusUpdate('denied')}
-                disabled={isUpdating || upload.status === 'denied'}
-                className="min-w-[100px]"
-              >
-                {isUpdating ? 'Updating...' : 'Deny'}
-              </Button>
+        {/* Action Buttons - Fixed Footer */}
+        <div className="flex-shrink-0 p-4 sm:p-6 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-700/50 rounded-b-2xl">
+          <div className="flex flex-col sm:flex-row justify-end gap-3">
+            {/* Admin Actions */}
+            <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 order-2 sm:order-1">
+              {!isReviewed ? (
+                /* Show Approve/Deny buttons for pending uploads */
+                <>
+                  <Button
+                    variant="success"
+                    size="sm"
+                    icon={Check}
+                    onClick={() => handleStatusUpdate('approved')}
+                    disabled={isUpdating}
+                    className="min-w-0 sm:min-w-[80px] text-sm px-3 py-2"
+                  >
+                    {isUpdating ? 'Updating...' : 'Approve'}
+                  </Button>
+                  <Button
+                    variant="danger"
+                    size="sm"
+                    icon={XIcon}
+                    onClick={() => handleStatusUpdate('denied')}
+                    disabled={isUpdating}
+                    className="min-w-0 sm:min-w-[80px] text-sm px-3 py-2"
+                  >
+                    {isUpdating ? 'Updating...' : 'Deny'}
+                  </Button>
+                </>
+              ) : (
+                /* Show Undo button for reviewed uploads (approved/denied) */
+                <Button
+                  variant="outline"
+                  size="sm"
+                  icon={Undo2}
+                  onClick={handleUndo}
+                  disabled={isUpdating}
+                  className="min-w-0 sm:min-w-[100px] text-sm px-3 py-2 border-yellow-300 dark:border-yellow-600 text-yellow-700 dark:text-yellow-300 hover:bg-yellow-50 dark:hover:bg-yellow-900/20"
+                >
+                  {isUpdating ? 'Undoing...' : 'Undo Review'}
+                </Button>
+              )}
             </div>
 
             {/* Close Button */}
             <Button
               variant="outline"
+              size="sm"
               onClick={onClose}
               disabled={isUpdating}
-              className="min-w-[80px]"
+              className="min-w-0 sm:min-w-[60px] text-sm px-3 py-2 order-1 sm:order-2"
             >
               Close
             </Button>
