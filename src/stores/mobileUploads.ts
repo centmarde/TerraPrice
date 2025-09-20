@@ -65,9 +65,10 @@ export const useMobileUploadsStore = create<MobileUploadsState>((set, get) => ({
       console.log('✅ Admin client connection working, found', count, 'total records');
       
       // Fetch all records - no limit to show everything to boss
+      console.log('📊 Attempting to fetch mobile uploads...');
       const { data, error } = await supabaseAdmin
         .from('mobile_uploads')
-        .select('id, user_id, file_name, file_path, file_size, status, created_at, updated_at')
+        .select('id, user_id, file_name, file_path, file_size, status, created_at, updated_at, comments')
         .order('created_at', { ascending: false });
 
       console.log('📊 Query result:', { 
@@ -167,9 +168,9 @@ export const useMobileUploadsStore = create<MobileUploadsState>((set, get) => ({
     set({ selectedUpload: upload || null });
   },
 
-  updateUploadStatus: async (id: number, status: MobileUpload['status']) => {
+  updateUploadStatus: async (id: number, status: MobileUpload['status'], denialReason?: string) => {
     try {
-      console.log('🔄 Updating upload status:', { id, status });
+      console.log('🔄 Updating upload status:', { id, status, denialReason });
       
       // Store the original status for undo functionality
       const { uploads } = get();
@@ -208,10 +209,26 @@ export const useMobileUploadsStore = create<MobileUploadsState>((set, get) => ({
       
       console.log('✅ Admin access confirmed, proceeding with update...');
       
+      // Prepare update data
+      const updateData: any = { 
+        status, 
+        updated_at: new Date().toISOString() 
+      };
+      
+      // Add comments if status is denied and denialReason provided
+      if (status === 'denied' && denialReason) {
+        updateData.comments = denialReason;
+      }
+      
+      // Clear comments if status is approved (optional)
+      if (status === 'approved') {
+        updateData.comments = null;
+      }
+      
       // Use admin client to bypass RLS policies
       const { error } = await supabaseAdmin
         .from('mobile_uploads')
-        .update({ status, updated_at: new Date().toISOString() })
+        .update(updateData)
         .eq('id', id);
 
       if (error) {
@@ -225,12 +242,22 @@ export const useMobileUploadsStore = create<MobileUploadsState>((set, get) => ({
       const { selectedUpload } = get();
       const updatedUploads = uploads.map(upload => 
         upload.id === id 
-          ? { ...upload, status, updated_at: new Date().toISOString() }
+          ? { 
+              ...upload, 
+              status, 
+              updated_at: new Date().toISOString(),
+              comments: status === 'denied' ? denialReason : (status === 'approved' ? null : upload.comments)
+            }
           : upload
       );
       
       const updatedSelectedUpload = selectedUpload?.id === id 
-        ? { ...selectedUpload, status, updated_at: new Date().toISOString() }
+        ? { 
+            ...selectedUpload, 
+            status, 
+            updated_at: new Date().toISOString(),
+            comments: status === 'denied' ? denialReason : (status === 'approved' ? null : selectedUpload.comments)
+          }
         : selectedUpload;
 
       set({ uploads: updatedUploads, selectedUpload: updatedSelectedUpload });

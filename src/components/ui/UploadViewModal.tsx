@@ -6,6 +6,7 @@ import { MobileUpload } from '../../types';
 import { previewFile, getSupabaseFileUrl, listSupabaseBuckets } from '../../utils/fileUtils';
 import { supabase } from '../../lib/supabase';
 import { useMobileUploadsStore } from '../../stores/mobileUploads';
+import { MobileUploadDenialDialog } from './MobileUploadDenialDialog';
 
 interface UploadViewModalProps {
   upload: MobileUpload | null;
@@ -19,6 +20,7 @@ export const UploadViewModal: React.FC<UploadViewModalProps> = ({
   onClose 
 }) => {
   const [isUpdating, setIsUpdating] = useState(false);
+  const [isDenialDialogOpen, setIsDenialDialogOpen] = useState(false);
   const { updateUploadStatus, undoStatusChange, recentActions } = useMobileUploadsStore();
 
   if (!isOpen || !upload) return null;
@@ -80,6 +82,24 @@ export const UploadViewModal: React.FC<UploadViewModalProps> = ({
       }
       
       alert(errorMessage);
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
+  const handleDeny = () => {
+    if (upload.status !== 'pending') return;
+    setIsDenialDialogOpen(true);
+  };
+
+  const handleDenialConfirm = async (reason: string) => {
+    setIsUpdating(true);
+    try {
+      await updateUploadStatus(upload.id, 'denied', reason);
+      setIsDenialDialogOpen(false);
+      onClose();
+    } catch (error) {
+      console.error('Error denying upload:', error);
     } finally {
       setIsUpdating(false);
     }
@@ -486,7 +506,7 @@ export const UploadViewModal: React.FC<UploadViewModalProps> = ({
                     variant="danger"
                     size="sm"
                     icon={XIcon}
-                    onClick={() => handleStatusUpdate('denied')}
+                    onClick={handleDeny}
                     disabled={isUpdating}
                     className="min-w-0 sm:min-w-[80px] text-sm px-3 py-2"
                   >
@@ -521,6 +541,15 @@ export const UploadViewModal: React.FC<UploadViewModalProps> = ({
           </div>
         </div>
       </div>
+
+      {/* Denial Dialog */}
+      <MobileUploadDenialDialog
+        isOpen={isDenialDialogOpen}
+        onClose={() => setIsDenialDialogOpen(false)}
+        onConfirm={handleDenialConfirm}
+        uploadFileName={upload.file_name}
+        isLoading={isUpdating}
+      />
     </div>
   );
 };

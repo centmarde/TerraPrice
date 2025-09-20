@@ -261,6 +261,16 @@ const ReviewHistory: React.FC = () => {
                           </div>
                         </div>
 
+                        {/* Denial Reason for denied uploads */}
+                        {upload.status === 'denied' && upload.denial_reason && (
+                          <div className="mt-3 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md">
+                            <p className="text-xs font-medium text-red-700 dark:text-red-300 mb-1">Denial Reason:</p>
+                            <p className="text-sm text-red-800 dark:text-red-200">
+                              {upload.denial_reason}
+                            </p>
+                          </div>
+                        )}
+
                         {/* Action Button */}
                         <div className="flex justify-end">
                           <Button

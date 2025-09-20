@@ -49,6 +49,7 @@ export interface MobileUpload {
   file_size: number | null;
   status: 'uploading' | 'uploaded' | 'processing' | 'pending' | 'approved' | 'denied' | 'completed' | 'error';
   updated_at: string | null;
+  comments?: string | null;
 }
 
 export interface MobileUploadsState {
@@ -67,7 +68,7 @@ export interface MobileUploadsState {
   fetchUploadsByUserId: (userId: string) => Promise<void>;
   fetchUploadsByStatus: (status: MobileUpload['status']) => Promise<void>;
   selectUpload: (id: number) => void;
-  updateUploadStatus: (id: number, status: MobileUpload['status']) => Promise<void>;
+  updateUploadStatus: (id: number, status: MobileUpload['status'], denialReason?: string) => Promise<void>;
   undoStatusChange: (submissionId: string) => Promise<void>;
   subscribeToUploads: () => void;
   unsubscribeFromUploads: () => void;
