@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { X, FileImage, Calendar, User, HardDrive, Check, XIcon, Undo2 } from 'lucide-react';
-import { Button } from './Button';
+import { Button } from '../ui/Button';
 import { MobileUpload } from '../../types';
 import { useMobileUploadsStore } from '../../stores/mobileUploads';
 import { MobileUploadDenialDialog } from './MobileUploadDenialDialog';
