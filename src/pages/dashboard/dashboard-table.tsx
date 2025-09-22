@@ -6,6 +6,8 @@ import { Button } from '../../components/ui/Button';
 import { LoadingBars } from '../../components/ui/Loader';
 import { MobileUpload } from '../../types';
 import DashboardDialog from './dashboard-dialog';
+import { getDisplayConfidenceScore, getConfidenceBadgeColor, getConfidenceLevelText } from '../../utils/confidenceUtils';
+import { formatPhilippineDate } from '../../utils/dateUtils';
 
 const DashboardTable: React.FC = () => {
   const { 
@@ -24,13 +26,7 @@ const DashboardTable: React.FC = () => {
 
   const formatDate = (dateString: string | null) => {
     if (!dateString) return 'N/A';
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
+    return formatPhilippineDate(dateString);
   };
 
   const formatFileSize = (bytes?: number | null) => {
@@ -181,10 +177,10 @@ const DashboardTable: React.FC = () => {
                         {upload.confidence_score !== null && upload.confidence_score !== undefined ? (
                           <div className="flex items-center space-x-2">
                             <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
-                              {upload.confidence_score}%
+                              {getDisplayConfidenceScore(upload.confidence_score)}%
                             </span>
-                            <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${getConfidenceScoreColor(upload.confidence_score)}`}>
-                              {getConfidenceScoreLabel(upload.confidence_score)}
+                            <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${getConfidenceBadgeColor(getDisplayConfidenceScore(upload.confidence_score))}`}>
+                              {getConfidenceLevelText(getDisplayConfidenceScore(upload.confidence_score))}
                             </span>
                           </div>
                         ) : (
@@ -264,10 +260,10 @@ const DashboardTable: React.FC = () => {
                           <div className="flex items-center space-x-1">
                             <Brain className="w-3 h-3 text-gray-400" />
                             <span className="text-xs text-gray-600 dark:text-gray-300 font-medium">
-                              {upload.confidence_score}%
+                              {getDisplayConfidenceScore(upload.confidence_score)}%
                             </span>
-                            <span className={`inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium ${getConfidenceScoreColor(upload.confidence_score)}`}>
-                              {getConfidenceScoreLabel(upload.confidence_score)}
+                            <span className={`inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium ${getConfidenceBadgeColor(getDisplayConfidenceScore(upload.confidence_score))}`}>
+                              {getConfidenceLevelText(getDisplayConfidenceScore(upload.confidence_score))}
                             </span>
                           </div>
                         )}

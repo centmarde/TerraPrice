@@ -5,6 +5,7 @@ import { Button } from '../ui/Button';
 import { Card } from '../ui/Card';
 import { DenialDialog } from '../ui/DenialDialog';
 import { useFloorplanStore } from '../../stores/floorplanStore';
+import { formatPhilippineDate } from '../../utils/dateUtils';
 
 interface ApprovalControlsProps {
   submission: FloorplanSubmission;
@@ -84,7 +85,7 @@ export const ApprovalControls: React.FC<ApprovalControlsProps> = ({
                     </p>
                     <p className="text-xs text-blue-600 dark:text-blue-400">
                       Changed from "{undoableAction.previousStatus}" to "{undoableAction.newStatus}"
-                      {' '}{new Date(undoableAction.timestamp).toLocaleTimeString()}
+                      {' '}{new Date(undoableAction.timestamp).toLocaleTimeString('en-US', { timeZone: 'Asia/Manila' })}
                     </p>
                   </div>
                 </div>
@@ -205,7 +206,7 @@ export const ApprovalControls: React.FC<ApprovalControlsProps> = ({
               </p>
               {submission.reviewedAt && (
                 <p className="text-sm text-gray-500 dark:text-gray-500 mt-1">
-                  Reviewed on {new Date(submission.reviewedAt).toLocaleDateString()}
+                  Reviewed on {formatPhilippineDate(submission.reviewedAt, { shortFormat: true })}
                 </p>
               )}
             </div>

@@ -4,6 +4,7 @@ import { useMobileUploadsStore } from '../../stores/mobileUploads';
 import { Button } from '../../components/ui/Button';
 import { MobileUpload } from '../../types';
 import RejectionDialog from '../../components/ui/RejectionDialog';
+import { formatPhilippineDate } from '../../utils/dateUtils';
 
 interface DashboardDialogProps {
   isOpen: boolean;
@@ -18,14 +19,9 @@ const DashboardDialog: React.FC<DashboardDialogProps> = ({ isOpen, upload, onClo
 
   if (!isOpen) return null;
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
+  const formatDate = (dateString: string | null) => {
+    if (!dateString) return 'N/A';
+    return formatPhilippineDate(dateString);
   };
 
   const formatFileSize = (bytes?: number) => {

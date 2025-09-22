@@ -5,6 +5,9 @@ import { MobileUpload } from '../../types';
 import { useMobileUploadsStore } from '../../stores/mobileUploads';
 import { MobileUploadDenialDialog } from './MobileUploadDenialDialog';
 import { supabase } from '../../lib/supabase';
+import { getDisplayConfidenceScore, getConfidenceTextColor, getConfidenceBadgeColor, getConfidenceLevelText } from '../../utils/confidenceUtils';
+import { formatPhilippineDate } from '../../utils/dateUtils';
+import { Portal } from './Portal';
 
 interface UploadViewModalProps {
   upload: MobileUpload | null;
@@ -92,20 +95,23 @@ export const UploadViewModal: React.FC<UploadViewModalProps> = ({
     }
   };
 
+  if (!isOpen || !upload) return null;
+
   return (
-    <div className="fixed inset-0 z-50 flex items-start sm:items-center justify-center p-3 sm:p-4 bg-black/50 backdrop-blur-sm overflow-y-auto">
-      <div className="bg-white dark:bg-gray-800 rounded-xl sm:rounded-2xl shadow-2xl max-w-lg w-full my-4 flex flex-col max-h-[calc(100vh-2rem)]">
+    <Portal>
+      <div className="fixed inset-0 z-50 flex items-start sm:items-center justify-center p-3 sm:p-6 bg-black/50 backdrop-blur-sm overflow-y-auto">
+      <div className="bg-white dark:bg-gray-800 rounded-xl sm:rounded-2xl shadow-2xl max-w-2xl lg:max-w-3xl w-full my-4 flex flex-col max-h-[calc(100vh-3rem)]">
         {/* Header */}
-        <div className="flex items-center justify-between p-4 sm:p-6 border-b border-gray-200 dark:border-gray-700 flex-shrink-0">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 sm:w-12 sm:h-12 bg-teal-100 dark:bg-teal-900/30 rounded-lg flex items-center justify-center">
-              <FileImage className="w-5 h-5 sm:w-6 sm:h-6 text-teal-600 dark:text-teal-400" />
+        <div className="flex items-center justify-between p-6 sm:p-8 border-b border-gray-200 dark:border-gray-700 flex-shrink-0">
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 sm:w-14 sm:h-14 bg-teal-100 dark:bg-teal-900/30 rounded-xl flex items-center justify-center">
+              <FileImage className="w-6 h-6 sm:w-7 sm:h-7 text-teal-600 dark:text-teal-400" />
             </div>
             <div className="min-w-0 flex-1">
-              <h2 className="text-lg sm:text-xl font-semibold text-gray-900 dark:text-white truncate">
+              <h2 className="text-xl sm:text-2xl font-semibold text-gray-900 dark:text-white truncate">
                 Upload Details
               </h2>
-              <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 truncate">
+              <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400 truncate mt-1">
                 {upload.file_name || 'Unnamed file'}
               </p>
             </div>
@@ -114,18 +120,18 @@ export const UploadViewModal: React.FC<UploadViewModalProps> = ({
             variant="outline"
             size="sm"
             onClick={onClose}
-            className="p-2 h-8 w-8 sm:h-9 sm:w-9 flex-shrink-0"
+            className="p-3 h-10 w-10 sm:h-11 sm:w-11 flex-shrink-0"
           >
-            <X className="w-3 h-3 sm:w-4 sm:h-4" />
+            <X className="w-4 h-4 sm:w-5 sm:h-5" />
           </Button>
         </div>
 
         {/* Content */}
-        <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4 sm:space-y-6 min-h-0">
+        <div className="flex-1 overflow-y-auto p-6 sm:p-8 space-y-6 sm:space-y-8 min-h-0">
           {/* Status */}
-          <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
-            <span className="text-sm font-medium text-gray-600 dark:text-gray-400">Status:</span>
-            <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs sm:text-sm font-medium w-fit ${
+          <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
+            <span className="text-base font-medium text-gray-600 dark:text-gray-400">Status:</span>
+            <span className={`inline-flex items-center px-4 py-2 rounded-full text-sm sm:text-base font-medium w-fit ${
               upload.status === 'approved' 
                 ? 'bg-green-100 dark:bg-green-900/20 text-green-800 dark:text-green-300'
                 : upload.status === 'denied'
@@ -137,23 +143,23 @@ export const UploadViewModal: React.FC<UploadViewModalProps> = ({
           </div>
 
           {/* User Information */}
-          <div className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-4 space-y-3">
-            <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-3">User Information</h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div className="flex items-center gap-2">
-                <User className="w-4 h-4 text-gray-500 dark:text-gray-400 flex-shrink-0" />
+          <div className="bg-gray-50 dark:bg-gray-700/50 rounded-xl p-6 space-y-4">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">User Information</h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+              <div className="flex items-center gap-3">
+                <User className="w-5 h-5 text-gray-500 dark:text-gray-400 flex-shrink-0" />
                 <div className="min-w-0">
-                  <p className="text-xs text-gray-500 dark:text-gray-400">Full Name</p>
-                  <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
+                  <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">Full Name</p>
+                  <p className="text-base font-medium text-gray-900 dark:text-white truncate">
                     {upload.userDetails?.fullName || 'Unknown'}
                   </p>
                 </div>
               </div>
-              <div className="flex items-center gap-2">
-                <User className="w-4 h-4 text-gray-500 dark:text-gray-400 flex-shrink-0" />
+              <div className="flex items-center gap-3">
+                <User className="w-5 h-5 text-gray-500 dark:text-gray-400 flex-shrink-0" />
                 <div className="min-w-0">
-                  <p className="text-xs text-gray-500 dark:text-gray-400">Email</p>
-                  <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
+                  <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">Email</p>
+                  <p className="text-base font-medium text-gray-900 dark:text-white truncate">
                     {upload.userDetails?.email || 'No email provided'}
                   </p>
                 </div>
@@ -162,59 +168,40 @@ export const UploadViewModal: React.FC<UploadViewModalProps> = ({
           </div>
 
           {/* File Information */}
-          <div className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-4 space-y-3">
-            <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-3">File Information</h3>
-            <div className="space-y-3">
-              <div className="flex items-center gap-2">
-                <Calendar className="w-4 h-4 text-gray-500 dark:text-gray-400 flex-shrink-0" />
+          <div className="bg-gray-50 dark:bg-gray-700/50 rounded-xl p-6 space-y-4">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">File Information</h3>
+            <div className="space-y-4">
+              <div className="flex items-center gap-3">
+                <Calendar className="w-5 h-5 text-gray-500 dark:text-gray-400 flex-shrink-0" />
                 <div>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">Uploaded</p>
-                  <p className="text-sm font-medium text-gray-900 dark:text-white">
-                    {upload.created_at ? new Date(upload.created_at).toLocaleDateString('en-US', {
-                      weekday: 'short',
-                      year: 'numeric',
-                      month: 'short',
-                      day: 'numeric',
-                      hour: '2-digit',
-                      minute: '2-digit'
-                    }) : 'Unknown'}
+                  <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">Uploaded</p>
+                  <p className="text-base font-medium text-gray-900 dark:text-white">
+                    {upload.created_at ? formatPhilippineDate(upload.created_at) : 'Unknown'}
                   </p>
                 </div>
               </div>
-              {upload.file_size && (
-                <div className="flex items-center gap-2">
-                  <HardDrive className="w-4 h-4 text-gray-500 dark:text-gray-400 flex-shrink-0" />
+              {upload.file_size !== null && upload.file_size !== undefined && (
+                <div className="flex items-center gap-3">
+                  <HardDrive className="w-5 h-5 text-gray-500 dark:text-gray-400 flex-shrink-0" />
                   <div>
-                    <p className="text-xs text-gray-500 dark:text-gray-400">File Size</p>
-                    <p className="text-sm font-medium text-gray-900 dark:text-white">
+                    <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">File Size</p>
+                    <p className="text-base font-medium text-gray-900 dark:text-white">
                       {(upload.file_size / 1024 / 1024).toFixed(2)} MB
                     </p>
                   </div>
                 </div>
               )}
               {upload.confidence_score !== null && upload.confidence_score !== undefined && (
-                <div className="flex items-center gap-2">
-                  <Brain className="w-4 h-4 text-gray-500 dark:text-gray-400 flex-shrink-0" />
+                <div className="flex items-center gap-3">
+                  <Brain className="w-5 h-5 text-gray-500 dark:text-gray-400 flex-shrink-0" />
                   <div>
-                    <p className="text-xs text-gray-500 dark:text-gray-400">AI Confidence Score</p>
+                    <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">AI Confidence Score</p>
                     <div className="flex items-center gap-2">
-                      <p className={`text-sm font-medium ${
-                        upload.confidence_score >= 80 
-                          ? 'text-green-600 dark:text-green-400' 
-                          : upload.confidence_score >= 60 
-                          ? 'text-yellow-600 dark:text-yellow-400' 
-                          : 'text-red-600 dark:text-red-400'
-                      }`}>
-                        {upload.confidence_score}%
+                      <p className={`text-base font-medium ${getConfidenceTextColor(getDisplayConfidenceScore(upload.confidence_score))}`}>
+                        {getDisplayConfidenceScore(upload.confidence_score)}%
                       </p>
-                      <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
-                        upload.confidence_score >= 80 
-                          ? 'bg-green-100 dark:bg-green-900/20 text-green-800 dark:text-green-300' 
-                          : upload.confidence_score >= 60 
-                          ? 'bg-yellow-100 dark:bg-yellow-900/20 text-yellow-800 dark:text-yellow-300' 
-                          : 'bg-red-100 dark:bg-red-900/20 text-red-800 dark:text-red-300'
-                      }`}>
-                        {upload.confidence_score >= 80 ? 'High' : upload.confidence_score >= 60 ? 'Medium' : 'Low'}
+                      <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getConfidenceBadgeColor(getDisplayConfidenceScore(upload.confidence_score))}`}>
+                        {getConfidenceLevelText(getDisplayConfidenceScore(upload.confidence_score))}
                       </span>
                     </div>
                   </div>
@@ -224,15 +211,15 @@ export const UploadViewModal: React.FC<UploadViewModalProps> = ({
           </div>
 
           {/* Floorplan Preview */}
-          <div className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-4 space-y-3">
-            <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-3">Floorplan Preview</h3>
-            <div className="relative bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-600 overflow-hidden">
+          <div className="bg-gray-50 dark:bg-gray-700/50 rounded-xl p-6 space-y-4">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Floorplan Preview</h3>
+            <div className="relative bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-600 overflow-hidden">
               {upload.file_path ? (
                 <div className="relative">
                   <img
                     src={getImageUrl(upload.file_path) || upload.file_path}
                     alt={`Floorplan - ${upload.file_name}`}
-                    className="w-full h-auto max-h-96 object-contain"
+                    className="w-full h-auto max-h-[500px] object-contain"
                     onError={(e) => {
                       const target = e.target as HTMLImageElement;
                       target.style.display = 'none';
@@ -250,7 +237,7 @@ export const UploadViewModal: React.FC<UploadViewModalProps> = ({
                       }
                     }}
                   />
-                  <div className="absolute top-2 right-2 bg-black/50 text-white text-xs px-2 py-1 rounded">
+                  <div className="absolute top-3 right-3 bg-black/70 text-white text-sm px-3 py-2 rounded-lg backdrop-blur-sm">
                     {upload.file_name}
                   </div>
                 </div>
@@ -302,13 +289,7 @@ export const UploadViewModal: React.FC<UploadViewModalProps> = ({
                       ? 'text-green-700 dark:text-green-400'
                       : 'text-red-700 dark:text-red-400'
                   }`}>
-                    Reviewed on {new Date(upload.updated_at).toLocaleDateString('en-US', {
-                      month: 'short',
-                      day: 'numeric',
-                      year: 'numeric',
-                      hour: '2-digit',
-                      minute: '2-digit'
-                    })}
+                    Reviewed on {formatPhilippineDate(upload.updated_at)}
                   </p>
                 )}
               </div>
@@ -317,29 +298,29 @@ export const UploadViewModal: React.FC<UploadViewModalProps> = ({
         </div>
 
         {/* Actions */}
-        <div className="flex-shrink-0 p-4 sm:p-6 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-700/50 rounded-b-xl sm:rounded-b-2xl">
-          <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
+        <div className="flex-shrink-0 p-6 sm:p-8 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-700/50 rounded-b-xl sm:rounded-b-2xl">
+          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
             {/* Show Approve/Deny buttons for all non-reviewed statuses */}
             {(upload.status !== 'approved' && upload.status !== 'denied') ? (
               <>
                 {/* Show Approve/Deny buttons for pending/uploaded/processing uploads */}
                 <Button
                   variant="primary"
-                  size="sm"
+                  size="md"
                   icon={Check}
                   onClick={handleApprove}
                   disabled={isUpdating}
-                  className="flex-1 text-sm px-3 py-2"
+                  className="flex-1 text-base px-6 py-3"
                 >
                   {isUpdating ? 'Updating...' : 'Approve'}
                 </Button>
                 <Button
                   variant="danger"
-                  size="sm"
+                  size="md"
                   icon={XIcon}
                   onClick={handleDeny}
                   disabled={isUpdating}
-                  className="flex-1 text-sm px-3 py-2"
+                  className="flex-1 text-base px-6 py-3"
                 >
                   {isUpdating ? 'Updating...' : 'Deny'}
                 </Button>
@@ -348,11 +329,11 @@ export const UploadViewModal: React.FC<UploadViewModalProps> = ({
               /* Show Undo button for approved uploads */
               <Button
                 variant="outline"
-                size="sm"
+                size="md"
                 icon={Undo2}
                 onClick={handleUndo}
                 disabled={isUpdating}
-                className="flex-1 text-sm px-3 py-2 border-yellow-300 dark:border-yellow-600 text-yellow-700 dark:text-yellow-300 hover:bg-yellow-50 dark:hover:bg-yellow-900/20"
+                className="flex-1 text-base px-6 py-3 border-yellow-300 dark:border-yellow-600 text-yellow-700 dark:text-yellow-300 hover:bg-yellow-50 dark:hover:bg-yellow-900/20"
               >
                 {isUpdating ? 'Undoing...' : 'Undo Review'}
               </Button>
@@ -360,17 +341,17 @@ export const UploadViewModal: React.FC<UploadViewModalProps> = ({
               /* Show Undo button for denied uploads */
               <Button
                 variant="outline"
-                size="sm"
+                size="md"
                 icon={Undo2}
                 onClick={handleUndo}
                 disabled={isUpdating}
-                className="flex-1 text-sm px-3 py-2 border-yellow-300 dark:border-yellow-600 text-yellow-700 dark:text-yellow-300 hover:bg-yellow-50 dark:hover:bg-yellow-900/20"
+                className="flex-1 text-base px-6 py-3 border-yellow-300 dark:border-yellow-600 text-yellow-700 dark:text-yellow-300 hover:bg-yellow-50 dark:hover:bg-yellow-900/20"
               >
                 {isUpdating ? 'Undoing...' : 'Undo Review'}
               </Button>
             ) : (
               /* Fallback for unknown statuses */
-              <div className="flex-1 text-center text-sm text-gray-500 dark:text-gray-400 py-2">
+              <div className="flex-1 text-center text-base text-gray-500 dark:text-gray-400 py-3">
                 Upload Status: {upload.status}
               </div>
             )}
@@ -378,10 +359,10 @@ export const UploadViewModal: React.FC<UploadViewModalProps> = ({
             {/* Close Button */}
             <Button
               variant="outline"
-              size="sm"
+              size="md"
               onClick={onClose}
               disabled={isUpdating}
-              className="flex-1 sm:flex-none sm:min-w-[80px] text-sm px-3 py-2"
+              className="flex-1 sm:flex-none sm:min-w-[100px] text-base px-6 py-3"
             >
               Close
             </Button>
@@ -398,5 +379,6 @@ export const UploadViewModal: React.FC<UploadViewModalProps> = ({
         />
       </div>
     </div>
+    </Portal>
   );
 };

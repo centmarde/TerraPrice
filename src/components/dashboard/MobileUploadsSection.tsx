@@ -18,6 +18,7 @@ import { UploadViewModal } from '../ui/UploadViewModal';
 import { ToastContainer, useToast } from '../ui/Toast';
 import { MobileUpload } from '../../types';
 import { downloadFile, getSupabaseFileUrl } from '../../utils/fileUtils';
+import { formatPhilippineDate } from '../../utils/dateUtils';
 
 interface MobileUploadsProps {
   uploads: MobileUpload[];
@@ -68,12 +69,7 @@ export const MobileUploadsSection: React.FC<MobileUploadsProps> = ({
 
   const formatDate = (dateString: string | null) => {
     if (!dateString) return 'N/A';
-    return new Date(dateString).toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
+    return formatPhilippineDate(dateString, { shortFormat: true });
   };
 
   const formatFileSize = (bytes: number | null) => {

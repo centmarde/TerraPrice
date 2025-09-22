@@ -276,6 +276,7 @@ export const useMobileUploadsStore = create<MobileUploadsState>((set, get) => ({
               ...upload, 
               status, 
               updated_at: new Date().toISOString(),
+              is_read: false, // Update local state to match database
               comments: status === 'denied' ? denialReason : (status === 'approved' ? null : upload.comments)
             }
           : upload
@@ -286,6 +287,7 @@ export const useMobileUploadsStore = create<MobileUploadsState>((set, get) => ({
             ...selectedUpload, 
             status, 
             updated_at: new Date().toISOString(),
+            is_read: false, // Update selected upload state to match database
             comments: status === 'denied' ? denialReason : (status === 'approved' ? null : selectedUpload.comments)
           }
         : selectedUpload;
@@ -321,7 +323,8 @@ export const useMobileUploadsStore = create<MobileUploadsState>((set, get) => ({
         .from('mobile_uploads')
         .update({ 
           status: 'pending', 
-          updated_at: new Date().toISOString() 
+          updated_at: new Date().toISOString(),
+          is_read: false // Keep as unread so user gets notified of status change back to pending
         })
         .eq('id', uploadId);
 
@@ -336,12 +339,12 @@ export const useMobileUploadsStore = create<MobileUploadsState>((set, get) => ({
       const { selectedUpload } = get();
       const updatedUploads = uploads.map(u =>
         u.id === uploadId
-          ? { ...u, status: 'pending' as const, updated_at: new Date().toISOString() }
+          ? { ...u, status: 'pending' as const, updated_at: new Date().toISOString(), is_read: false }
           : u
       );
 
       const updatedSelectedUpload = selectedUpload?.id === uploadId
-        ? { ...selectedUpload, status: 'pending' as const, updated_at: new Date().toISOString() }
+        ? { ...selectedUpload, status: 'pending' as const, updated_at: new Date().toISOString(), is_read: false }
         : selectedUpload;
 
       set({ 

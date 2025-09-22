@@ -16,6 +16,7 @@ import { Button } from '../components/ui/Button';
 import { LoadingDots } from '../components/ui/Loader';
 import { UploadViewModal } from '../components/ui/UploadViewModal';
 import { MobileUpload } from '../types';
+import { formatPhilippineDate } from '../utils/dateUtils';
 
 const ITEMS_PER_PAGE = 4;
 
@@ -76,14 +77,7 @@ const ReviewHistory: React.FC = () => {
   const paginatedSubmissions = sortedSubmissions.slice(startIndex, startIndex + ITEMS_PER_PAGE);
 
   const formatDate = (dateString: Date | string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
+    return formatPhilippineDate(dateString);
   };
 
   const getStatusIcon = (status: string) => {
@@ -244,7 +238,7 @@ const ReviewHistory: React.FC = () => {
                             </p>
                           </div>
                           
-                          {upload.file_size && (
+                          {upload.file_size !== null && upload.file_size !== undefined && (
                             <div className="bg-gray-50 dark:bg-gray-700/50 rounded-md p-3">
                               <p className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">File Size</p>
                               <p className="text-sm font-medium text-gray-900 dark:text-white">
@@ -263,7 +257,7 @@ const ReviewHistory: React.FC = () => {
 
                         {/* Denial Reason for denied uploads */}
                         {upload.status === 'denied' && upload.comments && (
-                          <div className="mt-3 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md">
+                          <div className="mt-3 mb-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md">
                             <p className="text-xs font-medium text-red-700 dark:text-red-300 mb-1">Denial Reason:</p>
                             <p className="text-sm text-red-800 dark:text-red-200">
                               {upload.comments}
@@ -272,7 +266,7 @@ const ReviewHistory: React.FC = () => {
                         )}
 
                         {/* Action Button */}
-                        <div className="flex justify-end">
+                        <div className={`flex justify-end ${upload.status === 'denied' && upload.comments ? 'mt-6' : 'mt-4'}`}>
                           <Button
                             variant="outline"
                             size="sm"

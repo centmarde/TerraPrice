@@ -8,6 +8,7 @@ import { Card, CardHeader } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { StatusBadge } from '../components/ui/StatusBadge';
 import { FloorplanSubmission } from '../types';
+import { formatPhilippineDate } from '../utils/dateUtils';
 
 const FloorplanReview: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -44,13 +45,7 @@ const FloorplanReview: React.FC = () => {
   };
 
   const formatDate = (date: Date) => {
-    return new Intl.DateTimeFormat('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    }).format(new Date(date));
+    return formatPhilippineDate(date);
   };
 
   if (isLoading || !selectedSubmission) {

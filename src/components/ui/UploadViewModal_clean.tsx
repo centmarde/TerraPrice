@@ -166,7 +166,7 @@ export const UploadViewModal: React.FC<UploadViewModalProps> = ({
                   </p>
                 </div>
               </div>
-              {upload.file_size && (
+              {upload.file_size !== null && upload.file_size !== undefined && (
                 <div className="flex items-center gap-2">
                   <HardDrive className="w-4 h-4 text-gray-500 dark:text-gray-400 flex-shrink-0" />
                   <div>
