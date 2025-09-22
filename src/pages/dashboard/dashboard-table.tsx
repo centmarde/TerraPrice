@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { FileText, Calendar, User, HardDrive, Eye, Download } from 'lucide-react';
+import { FileText, Calendar, User, HardDrive, Eye, Download, Brain } from 'lucide-react';
 import { useMobileUploadsStore } from '../../stores/mobileUploads';
 import { Card, CardHeader } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
@@ -33,11 +33,25 @@ const DashboardTable: React.FC = () => {
     });
   };
 
-  const formatFileSize = (bytes?: number) => {
+  const formatFileSize = (bytes?: number | null) => {
     if (!bytes) return 'N/A';
     const sizes = ['Bytes', 'KB', 'MB', 'GB'];
     const i = Math.floor(Math.log(bytes) / Math.log(1024));
     return Math.round(bytes / Math.pow(1024, i) * 100) / 100 + ' ' + sizes[i];
+  };
+
+  const getConfidenceScoreColor = (score?: number | null) => {
+    if (score === null || score === undefined) return 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300';
+    if (score >= 80) return 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-300';
+    if (score >= 60) return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-300';
+    return 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-300';
+  };
+
+  const getConfidenceScoreLabel = (score?: number | null) => {
+    if (score === null || score === undefined) return 'N/A';
+    if (score >= 80) return 'High';
+    if (score >= 60) return 'Medium';
+    return 'Low';
   };
 
   const getStatusColor = (status: string) => {
@@ -117,6 +131,7 @@ const DashboardTable: React.FC = () => {
                   <th className="text-left py-3 px-4 font-medium text-gray-900 dark:text-gray-100">File</th>
                   <th className="text-left py-3 px-4 font-medium text-gray-900 dark:text-gray-100">User</th>
                   <th className="text-left py-3 px-4 font-medium text-gray-900 dark:text-gray-100">Size</th>
+                  <th className="text-left py-3 px-4 font-medium text-gray-900 dark:text-gray-100">AI Score</th>
                   <th className="text-left py-3 px-4 font-medium text-gray-900 dark:text-gray-100">Status</th>
                   <th className="text-left py-3 px-4 font-medium text-gray-900 dark:text-gray-100">Uploaded</th>
                   <th className="text-left py-3 px-4 font-medium text-gray-900 dark:text-gray-100">Updated</th>
@@ -158,6 +173,23 @@ const DashboardTable: React.FC = () => {
                         <span className="text-sm text-gray-600 dark:text-gray-300">
                           {formatFileSize(upload.file_size)}
                         </span>
+                      </div>
+                    </td>
+                    <td className="py-3 px-4">
+                      <div className="flex items-center space-x-2">
+                        <Brain className="w-4 h-4 text-gray-400" />
+                        {upload.confidence_score !== null && upload.confidence_score !== undefined ? (
+                          <div className="flex items-center space-x-2">
+                            <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                              {upload.confidence_score}%
+                            </span>
+                            <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${getConfidenceScoreColor(upload.confidence_score)}`}>
+                              {getConfidenceScoreLabel(upload.confidence_score)}
+                            </span>
+                          </div>
+                        ) : (
+                          <span className="text-sm text-gray-500 dark:text-gray-400">N/A</span>
+                        )}
                       </div>
                     </td>
                     <td className="py-3 px-4">
@@ -227,9 +259,22 @@ const DashboardTable: React.FC = () => {
                       <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(upload.status)}`}>
                         {upload.status}
                       </span>
-                      <span className="text-xs text-gray-500 dark:text-gray-400">
-                        {formatFileSize(upload.file_size)}
-                      </span>
+                      <div className="flex items-center space-x-2">
+                        {upload.confidence_score !== null && upload.confidence_score !== undefined && (
+                          <div className="flex items-center space-x-1">
+                            <Brain className="w-3 h-3 text-gray-400" />
+                            <span className="text-xs text-gray-600 dark:text-gray-300 font-medium">
+                              {upload.confidence_score}%
+                            </span>
+                            <span className={`inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium ${getConfidenceScoreColor(upload.confidence_score)}`}>
+                              {getConfidenceScoreLabel(upload.confidence_score)}
+                            </span>
+                          </div>
+                        )}
+                        <span className="text-xs text-gray-500 dark:text-gray-400">
+                          {formatFileSize(upload.file_size)}
+                        </span>
+                      </div>
                     </div>
                   </div>
                 </div>

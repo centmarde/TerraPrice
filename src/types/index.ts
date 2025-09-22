@@ -50,6 +50,8 @@ export interface MobileUpload {
   status: 'uploading' | 'uploaded' | 'processing' | 'pending' | 'approved' | 'denied' | 'completed' | 'error';
   updated_at: string | null;
   comments?: string | null;
+  is_read?: boolean; // For notification system
+  confidence_score?: number | null; // AI confidence score (0-100)
 }
 
 export interface MobileUploadsState {
@@ -72,6 +74,8 @@ export interface MobileUploadsState {
   undoStatusChange: (submissionId: string) => Promise<void>;
   subscribeToUploads: () => void;
   unsubscribeFromUploads: () => void;
+  getUnreadCount: () => number;
+  markAsRead: (id: number) => Promise<void>;
 }
 
 export interface FloorplanState {

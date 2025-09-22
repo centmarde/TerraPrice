@@ -36,6 +36,35 @@ export const useMobileUploadsStore = create<MobileUploadsState>((set, get) => ({
     }
   },
 
+  // Get count of unread uploads (for notifications)
+  getUnreadCount: () => {
+    const { uploads } = get();
+    return uploads.filter(upload => upload.is_read === false).length;
+  },
+
+  // Mark upload as read
+  markAsRead: async (id: number) => {
+    try {
+      const { error } = await supabaseAdmin
+        .from('mobile_uploads')
+        .update({ is_read: true })
+        .eq('id', id);
+      
+      if (error) throw error;
+      
+      // Update local state
+      set(state => ({
+        uploads: state.uploads.map(upload => 
+          upload.id === id ? { ...upload, is_read: true } : upload
+        )
+      }));
+      
+      console.log('✅ Marked upload as read:', id);
+    } catch (error) {
+      console.error('❌ Failed to mark upload as read:', error);
+    }
+  },
+
   fetchUploads: async () => {
     set({ isLoading: true });
     
@@ -68,7 +97,7 @@ export const useMobileUploadsStore = create<MobileUploadsState>((set, get) => ({
       console.log('📊 Attempting to fetch mobile uploads...');
       const { data, error } = await supabaseAdmin
         .from('mobile_uploads')
-        .select('id, user_id, file_name, file_path, file_size, status, created_at, updated_at, comments')
+        .select('id, user_id, file_name, file_path, file_size, status, created_at, updated_at, comments, is_read, confidence_score')
         .order('created_at', { ascending: false });
 
       console.log('📊 Query result:', { 
@@ -212,7 +241,8 @@ export const useMobileUploadsStore = create<MobileUploadsState>((set, get) => ({
       // Prepare update data
       const updateData: any = { 
         status, 
-        updated_at: new Date().toISOString() 
+        updated_at: new Date().toISOString(),
+        is_read: false // Mark as unread for notifications when status changes
       };
       
       // Add comments if status is denied and denialReason provided

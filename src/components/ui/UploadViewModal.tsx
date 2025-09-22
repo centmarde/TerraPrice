@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
-import { X, FileImage, Calendar, User, HardDrive, Check, XIcon, Undo2 } from 'lucide-react';
+import { X, FileImage, Calendar, User, HardDrive, Check, XIcon, Undo2, Brain } from 'lucide-react';
 import { Button } from './Button';
 import { MobileUpload } from '../../types';
 import { useMobileUploadsStore } from '../../stores/mobileUploads';
 import { MobileUploadDenialDialog } from './MobileUploadDenialDialog';
+import { supabase } from '../../lib/supabase';
 
 interface UploadViewModalProps {
   upload: MobileUpload | null;
@@ -19,6 +20,23 @@ export const UploadViewModal: React.FC<UploadViewModalProps> = ({
   const [isUpdating, setIsUpdating] = useState(false);
   const [isDenialDialogOpen, setIsDenialDialogOpen] = useState(false);
   const { updateUploadStatus, undoStatusChange, recentActions } = useMobileUploadsStore();
+
+  // Helper function to get public URL for uploaded files
+  const getImageUrl = (filePath: string) => {
+    if (!filePath) return null;
+    
+    // If the file path is already a full URL, return it as is
+    if (filePath.startsWith('http://') || filePath.startsWith('https://')) {
+      return filePath;
+    }
+    
+    // Get public URL from Supabase storage
+    const { data } = supabase.storage
+      .from('mobile-uploads')
+      .getPublicUrl(filePath);
+    
+    return data.publicUrl;
+  };
 
   if (!isOpen || !upload) return null;
 
@@ -40,7 +58,7 @@ export const UploadViewModal: React.FC<UploadViewModalProps> = ({
   };
 
   const handleDeny = () => {
-    if (upload.status !== 'pending') return;
+    if (upload.status === 'approved' || upload.status === 'denied') return;
     setIsDenialDialogOpen(true);
   };
 
@@ -58,7 +76,7 @@ export const UploadViewModal: React.FC<UploadViewModalProps> = ({
   };
 
   const handleApprove = async () => {
-    if (!upload || isUpdating || upload.status !== 'pending') return;
+    if (!upload || isUpdating || upload.status === 'approved' || upload.status === 'denied') return;
     
     setIsUpdating(true);
     try {
@@ -73,9 +91,6 @@ export const UploadViewModal: React.FC<UploadViewModalProps> = ({
       setIsUpdating(false);
     }
   };
-
-  // Check if upload is already reviewed
-  const isReviewed = upload?.status === 'approved' || upload?.status === 'denied';
 
   return (
     <div className="fixed inset-0 z-50 flex items-start sm:items-center justify-center p-3 sm:p-4 bg-black/50 backdrop-blur-sm overflow-y-auto">
@@ -177,6 +192,77 @@ export const UploadViewModal: React.FC<UploadViewModalProps> = ({
                   </div>
                 </div>
               )}
+              {upload.confidence_score !== null && upload.confidence_score !== undefined && (
+                <div className="flex items-center gap-2">
+                  <Brain className="w-4 h-4 text-gray-500 dark:text-gray-400 flex-shrink-0" />
+                  <div>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">AI Confidence Score</p>
+                    <div className="flex items-center gap-2">
+                      <p className={`text-sm font-medium ${
+                        upload.confidence_score >= 80 
+                          ? 'text-green-600 dark:text-green-400' 
+                          : upload.confidence_score >= 60 
+                          ? 'text-yellow-600 dark:text-yellow-400' 
+                          : 'text-red-600 dark:text-red-400'
+                      }`}>
+                        {upload.confidence_score}%
+                      </p>
+                      <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                        upload.confidence_score >= 80 
+                          ? 'bg-green-100 dark:bg-green-900/20 text-green-800 dark:text-green-300' 
+                          : upload.confidence_score >= 60 
+                          ? 'bg-yellow-100 dark:bg-yellow-900/20 text-yellow-800 dark:text-yellow-300' 
+                          : 'bg-red-100 dark:bg-red-900/20 text-red-800 dark:text-red-300'
+                      }`}>
+                        {upload.confidence_score >= 80 ? 'High' : upload.confidence_score >= 60 ? 'Medium' : 'Low'}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Floorplan Preview */}
+          <div className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-4 space-y-3">
+            <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-3">Floorplan Preview</h3>
+            <div className="relative bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-600 overflow-hidden">
+              {upload.file_path ? (
+                <div className="relative">
+                  <img
+                    src={getImageUrl(upload.file_path) || upload.file_path}
+                    alt={`Floorplan - ${upload.file_name}`}
+                    className="w-full h-auto max-h-96 object-contain"
+                    onError={(e) => {
+                      const target = e.target as HTMLImageElement;
+                      target.style.display = 'none';
+                      const parent = target.parentElement;
+                      if (parent) {
+                        parent.innerHTML = `
+                          <div class="flex flex-col items-center justify-center py-12 text-gray-500 dark:text-gray-400">
+                            <svg class="w-12 h-12 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                            </svg>
+                            <p class="text-sm">Unable to load image</p>
+                            <p class="text-xs text-gray-400 dark:text-gray-500">${upload.file_name}</p>
+                          </div>
+                        `;
+                      }
+                    }}
+                  />
+                  <div className="absolute top-2 right-2 bg-black/50 text-white text-xs px-2 py-1 rounded">
+                    {upload.file_name}
+                  </div>
+                </div>
+              ) : (
+                <div className="flex flex-col items-center justify-center py-12 text-gray-500 dark:text-gray-400">
+                  <svg className="w-12 h-12 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  </svg>
+                  <p className="text-sm">No image available</p>
+                  <p className="text-xs text-gray-400 dark:text-gray-500">{upload.file_name}</p>
+                </div>
+              )}
             </div>
           </div>
 
@@ -191,7 +277,7 @@ export const UploadViewModal: React.FC<UploadViewModalProps> = ({
           )}
 
           {/* Review Status Message */}
-          {upload.status !== 'pending' && (
+          {(upload.status === 'approved' || upload.status === 'denied') && (
             <div className={`rounded-lg p-4 flex items-center gap-3 ${
               upload.status === 'approved' 
                 ? 'bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800'
@@ -233,9 +319,10 @@ export const UploadViewModal: React.FC<UploadViewModalProps> = ({
         {/* Actions */}
         <div className="flex-shrink-0 p-4 sm:p-6 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-700/50 rounded-b-xl sm:rounded-b-2xl">
           <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
-            {!isReviewed ? (
+            {/* Show Approve/Deny buttons for all non-reviewed statuses */}
+            {(upload.status !== 'approved' && upload.status !== 'denied') ? (
               <>
-                {/* Show Approve/Deny buttons for pending uploads */}
+                {/* Show Approve/Deny buttons for pending/uploaded/processing uploads */}
                 <Button
                   variant="primary"
                   size="sm"
@@ -257,8 +344,8 @@ export const UploadViewModal: React.FC<UploadViewModalProps> = ({
                   {isUpdating ? 'Updating...' : 'Deny'}
                 </Button>
               </>
-            ) : (
-              /* Show Undo button for reviewed uploads (approved/denied) */
+            ) : upload.status === 'approved' ? (
+              /* Show Undo button for approved uploads */
               <Button
                 variant="outline"
                 size="sm"
@@ -269,6 +356,23 @@ export const UploadViewModal: React.FC<UploadViewModalProps> = ({
               >
                 {isUpdating ? 'Undoing...' : 'Undo Review'}
               </Button>
+            ) : upload.status === 'denied' ? (
+              /* Show Undo button for denied uploads */
+              <Button
+                variant="outline"
+                size="sm"
+                icon={Undo2}
+                onClick={handleUndo}
+                disabled={isUpdating}
+                className="flex-1 text-sm px-3 py-2 border-yellow-300 dark:border-yellow-600 text-yellow-700 dark:text-yellow-300 hover:bg-yellow-50 dark:hover:bg-yellow-900/20"
+              >
+                {isUpdating ? 'Undoing...' : 'Undo Review'}
+              </Button>
+            ) : (
+              /* Fallback for unknown statuses */
+              <div className="flex-1 text-center text-sm text-gray-500 dark:text-gray-400 py-2">
+                Upload Status: {upload.status}
+              </div>
             )}
 
             {/* Close Button */}
