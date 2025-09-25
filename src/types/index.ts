@@ -3,13 +3,16 @@ export interface FloorplanSubmission {
   userId: string;
   imageUrl: string;
   estimatedCost: number;
-  status: 'pending' | 'approved' | 'rejected';
+  status: 'pending' | 'approved' | 'denied';
   submittedAt: Date;
   reviewedAt?: Date;
   adminNotes?: string;
+  denialReason?: string;
   userDetails?: UserInfo | null;
   squareFootage?: number;
   location?: string;
+  canUndo?: boolean;
+  previousStatus?: 'pending' | 'approved' | 'denied';
 }
 
 export interface UserInfo {
@@ -46,6 +49,9 @@ export interface MobileUpload {
   file_size: number | null;
   status: 'uploading' | 'uploaded' | 'processing' | 'pending' | 'approved' | 'denied' | 'completed' | 'error';
   updated_at: string | null;
+  comments?: string | null;
+  is_read?: boolean; // For notification system
+  confidence_score?: number | null; // AI confidence score (0-100)
 }
 
 export interface MobileUploadsState {
@@ -53,20 +59,38 @@ export interface MobileUploadsState {
   selectedUpload: MobileUpload | null;
   isLoading: boolean;
   subscription: any;
+  recentActions: Array<{
+    submissionId: string;
+    previousStatus: MobileUpload['status'];
+    newStatus: MobileUpload['status'];
+    timestamp: number;
+    canUndo: boolean;
+  }>;
   fetchUploads: () => Promise<void>;
   fetchUploadsByUserId: (userId: string) => Promise<void>;
   fetchUploadsByStatus: (status: MobileUpload['status']) => Promise<void>;
   selectUpload: (id: number) => void;
-  updateUploadStatus: (id: number, status: MobileUpload['status']) => Promise<void>;
+  updateUploadStatus: (id: number, status: MobileUpload['status'], denialReason?: string) => Promise<void>;
+  undoStatusChange: (submissionId: string) => Promise<void>;
   subscribeToUploads: () => void;
   unsubscribeFromUploads: () => void;
+  getUnreadCount: () => number;
+  markAsRead: (id: number) => Promise<void>;
 }
 
 export interface FloorplanState {
   submissions: FloorplanSubmission[];
   selectedSubmission: FloorplanSubmission | null;
   isLoading: boolean;
+  recentActions: Array<{
+    submissionId: string;
+    previousStatus: FloorplanSubmission['status'];
+    newStatus: FloorplanSubmission['status'];
+    timestamp: Date;
+    canUndo: boolean;
+  }>;
   fetchSubmissions: () => Promise<void>;
   selectSubmission: (id: string) => void;
-  updateSubmissionStatus: (id: string, status: FloorplanSubmission['status'], notes?: string) => Promise<void>;
+  updateSubmissionStatus: (id: string, status: FloorplanSubmission['status'], notes?: string, denialReason?: string) => Promise<void>;
+  undoStatusChange: (submissionId: string) => Promise<void>;
 }

@@ -7,6 +7,7 @@ export const useMobileUploadsStore = create<MobileUploadsState>((set, get) => ({
   selectedUpload: null,
   isLoading: false,
   subscription: null,
+  recentActions: [], // Add this for undo functionality
 
   subscribeToUploads: () => {
     const { subscription } = get();
@@ -35,16 +36,68 @@ export const useMobileUploadsStore = create<MobileUploadsState>((set, get) => ({
     }
   },
 
+  // Get count of unread uploads (for notifications)
+  getUnreadCount: () => {
+    const { uploads } = get();
+    return uploads.filter(upload => upload.is_read === false).length;
+  },
+
+  // Mark upload as read
+  markAsRead: async (id: number) => {
+    try {
+      const { error } = await supabaseAdmin
+        .from('mobile_uploads')
+        .update({ is_read: true })
+        .eq('id', id);
+      
+      if (error) throw error;
+      
+      // Update local state
+      set(state => ({
+        uploads: state.uploads.map(upload => 
+          upload.id === id ? { ...upload, is_read: true } : upload
+        )
+      }));
+      
+      console.log('✅ Marked upload as read:', id);
+    } catch (error) {
+      console.error('❌ Failed to mark upload as read:', error);
+    }
+  },
+
   fetchUploads: async () => {
     set({ isLoading: true });
     
     try {
-      console.log('🔍 Fetching uploads with optimized query...');
+      console.log('🔍 Starting fetchUploads...');
+      console.log('🔧 supabaseAdmin configured:', !!supabaseAdmin);
+      console.log('🔧 Environment check:', {
+        hasUrl: !!import.meta.env.VITE_SUPABASE_URL,
+        hasAnonKey: !!import.meta.env.VITE_SUPABASE_ANON_KEY,
+        hasServiceKey: !!import.meta.env.VITE_SUPABASE_SERVICE_ROLE_KEY
+      });
+      
+      // Test admin client first
+      console.log('🧪 Testing admin client connection...');
+      const { count, error: countError } = await supabaseAdmin
+        .from('mobile_uploads')
+        .select('*', { count: 'exact', head: true });
+        
+      console.log('📊 Count test result:', { count, countError });
+      
+      if (countError) {
+        console.error('❌ Admin client connection test failed:', countError);
+        set({ uploads: [], isLoading: false });
+        return;
+      }
+      
+      console.log('✅ Admin client connection working, found', count, 'total records');
       
       // Fetch all records - no limit to show everything to boss
+      console.log('📊 Attempting to fetch mobile uploads...');
       const { data, error } = await supabaseAdmin
         .from('mobile_uploads')
-        .select('id, user_id, file_name, file_path, file_size, status, created_at, updated_at')
+        .select('id, user_id, file_name, file_path, file_size, status, created_at, updated_at, comments, is_read, confidence_score')
         .order('created_at', { ascending: false });
 
       console.log('📊 Query result:', { 
@@ -144,9 +197,27 @@ export const useMobileUploadsStore = create<MobileUploadsState>((set, get) => ({
     set({ selectedUpload: upload || null });
   },
 
-  updateUploadStatus: async (id: number, status: MobileUpload['status']) => {
+  updateUploadStatus: async (id: number, status: MobileUpload['status'], denialReason?: string) => {
     try {
-      console.log('🔄 Updating upload status:', { id, status });
+      console.log('🔄 Updating upload status:', { id, status, denialReason });
+      
+      // Store the original status for undo functionality
+      const { uploads } = get();
+      const originalUpload = uploads.find(upload => upload.id === id);
+      if (originalUpload) {
+        // Store the action for undo functionality (only keep last 10 actions)
+        const newAction = {
+          submissionId: id.toString(),
+          timestamp: Date.now(),
+          previousStatus: originalUpload.status,
+          newStatus: status,
+          canUndo: true
+        };
+        
+        set(state => ({
+          recentActions: [newAction, ...state.recentActions.slice(0, 9)]
+        }));
+      }
       
       // Check if we have admin permissions
       if (!supabaseAdmin) {
@@ -167,10 +238,27 @@ export const useMobileUploadsStore = create<MobileUploadsState>((set, get) => ({
       
       console.log('✅ Admin access confirmed, proceeding with update...');
       
+      // Prepare update data
+      const updateData: any = { 
+        status, 
+        updated_at: new Date().toISOString(),
+        is_read: false // Mark as unread for notifications when status changes
+      };
+      
+      // Add comments if status is denied and denialReason provided
+      if (status === 'denied' && denialReason) {
+        updateData.comments = denialReason;
+      }
+      
+      // Clear comments if status is approved (optional)
+      if (status === 'approved') {
+        updateData.comments = null;
+      }
+      
       // Use admin client to bypass RLS policies
       const { error } = await supabaseAdmin
         .from('mobile_uploads')
-        .update({ status, updated_at: new Date().toISOString() })
+        .update(updateData)
         .eq('id', id);
 
       if (error) {
@@ -181,15 +269,27 @@ export const useMobileUploadsStore = create<MobileUploadsState>((set, get) => ({
       console.log('✅ Successfully updated upload status in database');
 
       // Update local state
-      const { uploads, selectedUpload } = get();
+      const { selectedUpload } = get();
       const updatedUploads = uploads.map(upload => 
         upload.id === id 
-          ? { ...upload, status, updated_at: new Date().toISOString() }
+          ? { 
+              ...upload, 
+              status, 
+              updated_at: new Date().toISOString(),
+              is_read: false, // Update local state to match database
+              comments: status === 'denied' ? denialReason : (status === 'approved' ? null : upload.comments)
+            }
           : upload
       );
       
       const updatedSelectedUpload = selectedUpload?.id === id 
-        ? { ...selectedUpload, status, updated_at: new Date().toISOString() }
+        ? { 
+            ...selectedUpload, 
+            status, 
+            updated_at: new Date().toISOString(),
+            is_read: false, // Update selected upload state to match database
+            comments: status === 'denied' ? denialReason : (status === 'approved' ? null : selectedUpload.comments)
+          }
         : selectedUpload;
 
       set({ uploads: updatedUploads, selectedUpload: updatedSelectedUpload });
@@ -197,6 +297,64 @@ export const useMobileUploadsStore = create<MobileUploadsState>((set, get) => ({
       console.log('✅ Successfully updated local state');
     } catch (error) {
       console.error('💥 Error updating upload status:', error);
+      throw error;
+    }
+  },
+
+  undoStatusChange: async (submissionId: string) => {
+    try {
+      const { uploads } = get();
+      const upload = uploads.find(u => u.id.toString() === submissionId);
+      
+      if (!upload) {
+        throw new Error('Upload not found');
+      }
+
+      // Check if upload is actually reviewed (approved or denied)
+      if (upload.status !== 'approved' && upload.status !== 'denied') {
+        throw new Error('Upload is not in a reviewed state');
+      }
+
+      console.log('🔄 Undoing status for upload:', { id: submissionId, currentStatus: upload.status });
+
+      // Always revert reviewed uploads back to pending status
+      const uploadId = parseInt(submissionId);
+      const { error } = await supabaseAdmin
+        .from('mobile_uploads')
+        .update({ 
+          status: 'pending', 
+          updated_at: new Date().toISOString(),
+          is_read: false // Keep as unread so user gets notified of status change back to pending
+        })
+        .eq('id', uploadId);
+
+      if (error) {
+        console.error('❌ Database update error:', error);
+        throw new Error(`Database update failed: ${error.message}`);
+      }
+
+      console.log('✅ Successfully reverted status to pending in database');
+
+      // Update local state
+      const { selectedUpload } = get();
+      const updatedUploads = uploads.map(u =>
+        u.id === uploadId
+          ? { ...u, status: 'pending' as const, updated_at: new Date().toISOString(), is_read: false }
+          : u
+      );
+
+      const updatedSelectedUpload = selectedUpload?.id === uploadId
+        ? { ...selectedUpload, status: 'pending' as const, updated_at: new Date().toISOString(), is_read: false }
+        : selectedUpload;
+
+      set({ 
+        uploads: updatedUploads, 
+        selectedUpload: updatedSelectedUpload
+      });
+
+      console.log('✅ Successfully updated local state - reverted to pending');
+    } catch (error) {
+      console.error('❌ Failed to undo status change:', error);
       throw error;
     }
   },
