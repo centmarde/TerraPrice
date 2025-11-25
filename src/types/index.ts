@@ -72,6 +72,7 @@ export interface MobileUploadsState {
   selectUpload: (id: number) => void;
   updateUploadStatus: (id: number, status: MobileUpload['status'], denialReason?: string) => Promise<void>;
   undoStatusChange: (submissionId: string) => Promise<void>;
+  deleteUpload: (id: number) => Promise<void>;
   subscribeToUploads: () => void;
   unsubscribeFromUploads: () => void;
   getUnreadCount: () => number;

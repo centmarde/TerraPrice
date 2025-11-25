@@ -358,4 +358,64 @@ export const useMobileUploadsStore = create<MobileUploadsState>((set, get) => ({
       throw error;
     }
   },
+
+  deleteUpload: async (id: number) => {
+    try {
+      const { uploads } = get();
+      const upload = uploads.find(u => u.id === id);
+      
+      if (!upload) {
+        throw new Error('Upload not found');
+      }
+
+      console.log('🗑️ Deleting upload:', { id, fileName: upload.file_name });
+
+      // Delete the file from storage if it exists
+      if (upload.file_path) {
+        try {
+          const { error: storageError } = await supabase.storage
+            .from('mobile-uploads')
+            .remove([upload.file_path]);
+
+          if (storageError) {
+            console.warn('⚠️ Failed to delete file from storage:', storageError);
+            // Continue with database deletion even if storage deletion fails
+          } else {
+            console.log('✅ Successfully deleted file from storage');
+          }
+        } catch (storageError) {
+          console.warn('⚠️ Storage deletion error:', storageError);
+          // Continue with database deletion
+        }
+      }
+
+      // Delete the record from the database
+      const { error } = await supabaseAdmin
+        .from('mobile_uploads')
+        .delete()
+        .eq('id', id);
+
+      if (error) {
+        console.error('❌ Database deletion error:', error);
+        throw new Error(`Failed to delete upload: ${error.message}`);
+      }
+
+      console.log('✅ Successfully deleted upload from database');
+
+      // Update local state - remove the upload
+      const { selectedUpload } = get();
+      const updatedUploads = uploads.filter(u => u.id !== id);
+      const updatedSelectedUpload = selectedUpload?.id === id ? null : selectedUpload;
+
+      set({ 
+        uploads: updatedUploads, 
+        selectedUpload: updatedSelectedUpload
+      });
+
+      console.log('✅ Successfully updated local state - upload removed');
+    } catch (error) {
+      console.error('❌ Failed to delete upload:', error);
+      throw error;
+    }
+  },
 }));

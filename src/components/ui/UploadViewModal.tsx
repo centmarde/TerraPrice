@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
-import { X, FileImage, Calendar, User, HardDrive, Check, XIcon, Undo2, Brain } from 'lucide-react';
+import { X, FileImage, Calendar, User, HardDrive, Check, XIcon, Undo2, Brain, Trash2 } from 'lucide-react';
 import { Button } from './Button';
 import { MobileUpload } from '../../types';
 import { useMobileUploadsStore } from '../../stores/mobileUploads';
 import { MobileUploadDenialDialog } from './MobileUploadDenialDialog';
+import { DeleteConfirmationDialog } from './DeleteConfirmationDialog';
 import { supabase } from '../../lib/supabase';
 import { getDisplayConfidenceScore, getConfidenceTextColor, getConfidenceBadgeColor, getConfidenceLevelText } from '../../utils/confidenceUtils';
 import { formatPhilippineDate } from '../../utils/dateUtils';
@@ -22,7 +23,8 @@ export const UploadViewModal: React.FC<UploadViewModalProps> = ({
 }) => {
   const [isUpdating, setIsUpdating] = useState(false);
   const [isDenialDialogOpen, setIsDenialDialogOpen] = useState(false);
-  const { updateUploadStatus, undoStatusChange, recentActions } = useMobileUploadsStore();
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const { updateUploadStatus, undoStatusChange, deleteUpload } = useMobileUploadsStore();
 
   // Helper function to get public URL for uploaded files
   const getImageUrl = (filePath: string) => {
@@ -90,6 +92,26 @@ export const UploadViewModal: React.FC<UploadViewModalProps> = ({
     } catch (error) {
       console.error('❌ Failed to approve upload:', error);
       alert('Failed to approve upload. Please try again.');
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
+  const handleDelete = () => {
+    setIsDeleteDialogOpen(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!upload || isUpdating) return;
+    
+    setIsUpdating(true);
+    try {
+      await deleteUpload(upload.id);
+      setIsDeleteDialogOpen(false);
+      onClose();
+    } catch (error) {
+      console.error('❌ Failed to delete upload:', error);
+      alert('Failed to delete upload. Please try again.');
     } finally {
       setIsUpdating(false);
     }
@@ -326,29 +348,53 @@ export const UploadViewModal: React.FC<UploadViewModalProps> = ({
                 </Button>
               </>
             ) : upload.status === 'approved' ? (
-              /* Show Undo button for approved uploads */
-              <Button
-                variant="outline"
-                size="md"
-                icon={Undo2}
-                onClick={handleUndo}
-                disabled={isUpdating}
-                className="flex-1 text-base px-6 py-3 border-yellow-300 dark:border-yellow-600 text-yellow-700 dark:text-yellow-300 hover:bg-yellow-50 dark:hover:bg-yellow-900/20"
-              >
-                {isUpdating ? 'Undoing...' : 'Undo Review'}
-              </Button>
+              /* Show Undo and Delete buttons for approved uploads */
+              <>
+                <Button
+                  variant="outline"
+                  size="md"
+                  icon={Undo2}
+                  onClick={handleUndo}
+                  disabled={isUpdating}
+                  className="flex-1 text-base px-6 py-3 border-yellow-300 dark:border-yellow-600 text-yellow-700 dark:text-yellow-300 hover:bg-yellow-50 dark:hover:bg-yellow-900/20"
+                >
+                  {isUpdating ? 'Undoing...' : 'Undo Review'}
+                </Button>
+                <Button
+                  variant="danger"
+                  size="md"
+                  icon={Trash2}
+                  onClick={handleDelete}
+                  disabled={isUpdating}
+                  className="flex-1 text-base px-6 py-3"
+                >
+                  Delete
+                </Button>
+              </>
             ) : upload.status === 'denied' ? (
-              /* Show Undo button for denied uploads */
-              <Button
-                variant="outline"
-                size="md"
-                icon={Undo2}
-                onClick={handleUndo}
-                disabled={isUpdating}
-                className="flex-1 text-base px-6 py-3 border-yellow-300 dark:border-yellow-600 text-yellow-700 dark:text-yellow-300 hover:bg-yellow-50 dark:hover:bg-yellow-900/20"
-              >
-                {isUpdating ? 'Undoing...' : 'Undo Review'}
-              </Button>
+              /* Show Undo and Delete buttons for denied uploads */
+              <>
+                <Button
+                  variant="outline"
+                  size="md"
+                  icon={Undo2}
+                  onClick={handleUndo}
+                  disabled={isUpdating}
+                  className="flex-1 text-base px-6 py-3 border-yellow-300 dark:border-yellow-600 text-yellow-700 dark:text-yellow-300 hover:bg-yellow-50 dark:hover:bg-yellow-900/20"
+                >
+                  {isUpdating ? 'Undoing...' : 'Undo Review'}
+                </Button>
+                <Button
+                  variant="danger"
+                  size="md"
+                  icon={Trash2}
+                  onClick={handleDelete}
+                  disabled={isUpdating}
+                  className="flex-1 text-base px-6 py-3"
+                >
+                  Delete
+                </Button>
+              </>
             ) : (
               /* Fallback for unknown statuses */
               <div className="flex-1 text-center text-base text-gray-500 dark:text-gray-400 py-3">
@@ -374,6 +420,15 @@ export const UploadViewModal: React.FC<UploadViewModalProps> = ({
           isOpen={isDenialDialogOpen}
           onClose={() => setIsDenialDialogOpen(false)}
           onConfirm={handleDenialConfirm}
+          uploadFileName={upload.file_name}
+          isLoading={isUpdating}
+        />
+
+        {/* Delete Confirmation Dialog */}
+        <DeleteConfirmationDialog
+          isOpen={isDeleteDialogOpen}
+          onClose={() => setIsDeleteDialogOpen(false)}
+          onConfirm={handleDeleteConfirm}
           uploadFileName={upload.file_name}
           isLoading={isUpdating}
         />

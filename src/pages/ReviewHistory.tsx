@@ -40,6 +40,8 @@ const ReviewHistory: React.FC = () => {
   const handleCloseModal = () => {
     setIsModalOpen(false);
     setSelectedUpload(null);
+    // Refresh uploads after closing modal to reflect any deletions
+    fetchUploads();
   };
 
   useEffect(() => {
